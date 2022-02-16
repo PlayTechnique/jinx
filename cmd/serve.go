@@ -1,22 +1,53 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
-	"jinx/src/api"
+	"jinx/src/jinkiesengine"
+	"os"
 )
 
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "Start your jenkins",
-	Long:  `jinx serve will get you an unconfigured jenkins. Sweet!`,
+	Short: "Subcommands to allow you to start or stop an unconfigured jinkies",
+	Long: `Why would you want an unconfigured instance of jinkies? Any time you want a jenkins instance
+quickly for reasons unrelated to a specific job. Maybe you want to prototype some jcasc settings or something.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		api.RunRunRun()
+		if len(args) == 0 {
+
+		}
+	},
+	PreRun: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			fmt.Println("Provide a subcommand or run with --help")
+			os.Exit(1)
+		}
+	},
+}
+
+var startSubCmd = &cobra.Command{
+	Use:   "start",
+	Short: "start jinkies!",
+	Long:  `Starts the unconfigured jinkies container`,
+	Run: func(cmd *cobra.Command, args []string) {
+		jinkiesengine.RunRunRun()
+	},
+}
+
+var stopSubCmd = &cobra.Command{
+	Use:   "stop",
+	Short: "Stops your jinkies container.",
+	Long:  `No configuration is retained after a stop, so this gets you back to a clean slate.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		jinkiesengine.StopGirl()
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
+	serveCmd.AddCommand(startSubCmd)
+	serveCmd.AddCommand(stopSubCmd)
 
 	// Here you will define your flags and configuration settings.
 
