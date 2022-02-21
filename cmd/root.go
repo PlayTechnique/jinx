@@ -15,7 +15,7 @@ var rootCmd = &cobra.Command{
 	Use:     "jinx",
 	Short:   "An application for managing jamandbees/jinkies containers",
 	Long:    `Start a jinx with jinx serve.`,
-	Version: "0.0.0",
+	Version: "0.0.1",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },

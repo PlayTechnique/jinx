@@ -1,2 +1,5 @@
 **/.idea/*
 jinx
+.swp
+*.env
+go_build_jinx

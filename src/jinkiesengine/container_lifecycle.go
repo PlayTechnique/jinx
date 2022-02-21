@@ -13,25 +13,22 @@ import (
 )
 
 type ContainerInfo struct {
-	autoRemove    bool
-	imageName     string
-	containerName string
-	containerPort nat.Port
-	hostIp        string
-	hostPort      string
+	AutoRemove    bool
+	ImageName     string
+	ContainerName string
+	ContainerPort nat.Port
+	HostIp        string
+	HostPort      string
 }
 
-var jenkins = ContainerInfo{autoRemove: true, imageName: "jamandbees/jinkies", containerName: "jinkies",
-	containerPort: "8080/tcp", hostIp: "0.0.0.0", hostPort: "8090"}
-
-func RunRunRun() container.ContainerCreateCreatedBody {
+func RunRunRun(jinkies ContainerInfo) container.ContainerCreateCreatedBody {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
 
-	imageName := jenkins.imageName
+	imageName := jinkies.ImageName
 	out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
 	if err != nil {
 		panic(err)
@@ -43,9 +40,9 @@ func RunRunRun() container.ContainerCreateCreatedBody {
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Image: imageName,
 	}, &container.HostConfig{
-		AutoRemove:   jenkins.autoRemove,
-		PortBindings: nat.PortMap{jenkins.containerPort: {{HostIP: jenkins.hostIp, HostPort: jenkins.hostPort}}},
-	}, nil, nil, jenkins.containerName)
+		AutoRemove:   jinkies.AutoRemove,
+		PortBindings: nat.PortMap{jinkies.ContainerPort: {{HostIP: jinkies.HostIp, HostPort: jinkies.HostPort}}},
+	}, nil, nil, jinkies.ContainerName)
 	if err != nil {
 		panic(err)
 	}
@@ -59,14 +56,14 @@ func RunRunRun() container.ContainerCreateCreatedBody {
 	return resp
 }
 
-func StopGirl() {
+func StopGirl(jinkies ContainerInfo) {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
 
-	if stopErr := cli.ContainerStop(ctx, jenkins.containerName, nil); err != nil {
+	if stopErr := cli.ContainerStop(ctx, jinkies.ContainerName, nil); err != nil {
 		panic(stopErr)
 	}
 }
