@@ -21,7 +21,7 @@ type ContainerInfo struct {
 	HostPort      string
 }
 
-func RunRunRun(jinkies ContainerInfo) container.ContainerCreateCreatedBody {
+func RunRunRun(jinkies ContainerInfo, hostConfig container.HostConfig) container.ContainerCreateCreatedBody {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -39,10 +39,8 @@ func RunRunRun(jinkies ContainerInfo) container.ContainerCreateCreatedBody {
 
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Image: imageName,
-	}, &container.HostConfig{
-		AutoRemove:   jinkies.AutoRemove,
-		PortBindings: nat.PortMap{jinkies.ContainerPort: {{HostIP: jinkies.HostIp, HostPort: jinkies.HostPort}}},
-	}, nil, nil, jinkies.ContainerName)
+	}, &hostConfig,
+		nil, nil, jinkies.ContainerName)
 	if err != nil {
 		panic(err)
 	}
