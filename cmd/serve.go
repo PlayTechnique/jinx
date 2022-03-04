@@ -24,6 +24,7 @@ func hydrateFromConfig(configPath string) jinkiesengine.ContainerInfo {
 		config.ContainerPort = "8080/tcp"
 		config.HostIp = "0.0.0.0"
 		config.HostPort = "8090/tcp"
+		config.PullImages = true
 	} else {
 		viper.AddConfigPath("./")
 		viper.SetConfigType("env")
@@ -107,15 +108,5 @@ func init() {
 			fmt.Printf("Could not open container config file %v \n", error)
 		}
 	}
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// serveCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 }

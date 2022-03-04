@@ -19,6 +19,7 @@ type ContainerInfo struct {
 	ContainerPort nat.Port
 	HostIp        string
 	HostPort      string
+	PullImages    bool
 }
 
 func RunRunRun(jinkies ContainerInfo, hostConfig container.HostConfig) container.ContainerCreateCreatedBody {
@@ -29,13 +30,16 @@ func RunRunRun(jinkies ContainerInfo, hostConfig container.HostConfig) container
 	}
 
 	imageName := jinkies.ImageName
-	out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
-	if err != nil {
-		panic(err)
-	}
 
-	defer out.Close()
-	io.Copy(os.Stdout, out) // write to stdout
+	if jinkies.PullImages {
+		out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
+		if err != nil {
+			panic(err)
+		}
+
+		defer out.Close()
+		io.Copy(os.Stdout, out) // write to stdout
+	}
 
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Image: imageName,
