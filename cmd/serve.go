@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/go-connections/nat"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"jinx/src/jinkiesengine"
@@ -49,7 +50,10 @@ func addConfig(configPath string) container.HostConfig {
 
 	if err := viper.ReadInConfig(); err != nil {
 		config = container.HostConfig{
-			AutoRemove: true,
+			AutoRemove:   true,
+			PortBindings: nat.PortMap{"8080/tcp": {{HostIP: "0.0.0.0", HostPort: "8090/tcp"}}},
+
+			PublishAllPorts: true,
 		}
 	}
 	viper.Unmarshal(&config)
