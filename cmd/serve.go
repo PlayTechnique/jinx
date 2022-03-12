@@ -74,7 +74,8 @@ var startSubCmd = &cobra.Command{
 	Short: "start jinkies!",
 	Long:  `Starts the unconfigured jinkies container`,
 	Run: func(cmd *cobra.Command, args []string) {
-		jinkiesengine.RunRunRun(hydrateFromConfig(containerConfigPath), addConfig(hostConfigPath))
+		jinkies := initializeCobraJinkies()
+		jinkies.RunRunRun(addConfig(hostConfigPath))
 	},
 }
 
@@ -83,7 +84,8 @@ var stopSubCmd = &cobra.Command{
 	Short: "Stops your jinkies container_info.",
 	Long:  `No configuration is retained after a stop, so this gets you back to a clean slate.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		jinkiesengine.StopGirl(hydrateFromConfig(containerConfigPath))
+		jinkies := initializeCobraJinkies()
+		jinkies.StopGirl()
 	},
 }
 

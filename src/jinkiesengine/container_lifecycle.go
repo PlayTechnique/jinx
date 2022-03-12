@@ -12,6 +12,15 @@ import (
 	"github.com/docker/docker/client"
 )
 
+func NewJinkies(info ContainerInfo) Jinkies {
+	return Jinkies{info, context.Background()}
+}
+
+type Jinkies struct {
+	ContainerInfo
+	Ctx context.Context
+}
+
 type ContainerInfo struct {
 	AutoRemove    bool
 	ImageName     string
@@ -22,8 +31,7 @@ type ContainerInfo struct {
 	PullImages    bool
 }
 
-func RunRunRun(jinkies ContainerInfo, hostConfig container.HostConfig) container.ContainerCreateCreatedBody {
-	ctx := context.Background()
+func (jinkies *Jinkies) RunRunRun(hostConfig container.HostConfig) container.ContainerCreateCreatedBody {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
@@ -32,7 +40,7 @@ func RunRunRun(jinkies ContainerInfo, hostConfig container.HostConfig) container
 	imageName := jinkies.ImageName
 
 	if jinkies.PullImages {
-		out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
+		out, err := cli.ImagePull(jinkies.Ctx, imageName, types.ImagePullOptions{})
 		if err != nil {
 			panic(err)
 		}
@@ -41,7 +49,7 @@ func RunRunRun(jinkies ContainerInfo, hostConfig container.HostConfig) container
 		io.Copy(os.Stdout, out) // write to stdout
 	}
 
-	resp, err := cli.ContainerCreate(ctx, &container.Config{
+	resp, err := cli.ContainerCreate(jinkies.Ctx, &container.Config{
 		Image: imageName,
 	}, &hostConfig,
 		nil, nil, jinkies.ContainerName)
@@ -49,7 +57,7 @@ func RunRunRun(jinkies ContainerInfo, hostConfig container.HostConfig) container
 		panic(err)
 	}
 
-	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+	if err := cli.ContainerStart(jinkies.Ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
 		panic(err)
 	}
 
@@ -58,14 +66,13 @@ func RunRunRun(jinkies ContainerInfo, hostConfig container.HostConfig) container
 	return resp
 }
 
-func StopGirl(jinkies ContainerInfo) {
-	ctx := context.Background()
+func (jinkies *Jinkies) StopGirl() {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
 
-	if stopErr := cli.ContainerStop(ctx, jinkies.ContainerName, nil); err != nil {
+	if stopErr := cli.ContainerStop(jinkies.Ctx, jinkies.ContainerName, nil); err != nil {
 		panic(stopErr)
 	}
 }
