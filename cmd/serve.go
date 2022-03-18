@@ -92,6 +92,7 @@ var stopSubCmd = &cobra.Command{
 }
 
 func init() {
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.AddCommand(serveCmd)
 	serveCmd.AddCommand(startSubCmd)
 	serveCmd.AddCommand(stopSubCmd)
