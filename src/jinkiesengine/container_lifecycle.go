@@ -3,7 +3,6 @@ package jinkiesengine
 import (
 	"context"
 	"fmt"
-	"github.com/docker/go-connections/nat"
 	"io"
 	"os"
 
@@ -12,26 +11,16 @@ import (
 	"github.com/docker/docker/client"
 )
 
-type ContainerInfo struct {
-	AutoRemove    bool
-	ImageName     string
-	ContainerName string
-	ContainerPort nat.Port
-	HostIp        string
-	HostPort      string
-	PullImages    bool
-}
-
-func RunRunRun(jinkies ContainerInfo, hostConfig container.HostConfig) container.ContainerCreateCreatedBody {
+func RunRunRun(containerName string, pullImages bool, containerConfig container.Config, hostConfig container.HostConfig) container.ContainerCreateCreatedBody {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
 
-	imageName := jinkies.ImageName
+	imageName := containerConfig.Image
 
-	if jinkies.PullImages {
+	if pullImages {
 		out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
 		if err != nil {
 			panic(err)
@@ -41,10 +30,8 @@ func RunRunRun(jinkies ContainerInfo, hostConfig container.HostConfig) container
 		io.Copy(os.Stdout, out) // write to stdout
 	}
 
-	resp, err := cli.ContainerCreate(ctx, &container.Config{
-		Image: imageName,
-	}, &hostConfig,
-		nil, nil, jinkies.ContainerName)
+	resp, err := cli.ContainerCreate(ctx, &containerConfig, &hostConfig,
+		nil, nil, containerName)
 	if err != nil {
 		panic(err)
 	}
@@ -58,14 +45,14 @@ func RunRunRun(jinkies ContainerInfo, hostConfig container.HostConfig) container
 	return resp
 }
 
-func StopGirl(jinkies ContainerInfo) {
+func StopGirl(containerName string) {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
 
-	if stopErr := cli.ContainerStop(ctx, jinkies.ContainerName, nil); err != nil {
+	if stopErr := cli.ContainerStop(ctx, containerName, nil); err != nil {
 		panic(stopErr)
 	}
 }

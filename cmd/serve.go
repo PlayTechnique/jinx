@@ -10,55 +10,25 @@ import (
 	"os"
 )
 
-var (
-	containerConfigPath = ""
-	hostConfigPath      = ""
-	hostConfig          container.HostConfig
-)
+type WorkflowData struct {
+	containerName string
+	pullImages    bool
 
-func hydrateFromConfig(configPath string) jinkiesengine.ContainerInfo {
-	var config jinkiesengine.ContainerInfo
-
-	if configPath == "" {
-		config.ImageName = "jamandbees/jinkies"
-		config.ContainerName = "jinkies"
-		config.ContainerPort = "8080/tcp"
-		config.HostIp = "0.0.0.0"
-		config.HostPort = "8090/tcp"
-		config.PullImages = true
-	} else {
-		viper.AddConfigPath("./")
-		viper.SetConfigType("env")
-		viper.SetConfigName(configPath)
-
-		if err := viper.ReadInConfig(); err != nil {
-			fmt.Println("Can't read config:", err)
-			os.Exit(1)
-		}
-		viper.Unmarshal(&config)
-	}
-
-	return config
+	containerConfig container.Config
+	hostConfig      container.HostConfig
 }
 
-func addConfig(configPath string) container.HostConfig {
-	var config container.HostConfig
+func hydrateFromConfig[T any](configPath string, config *T) {
 
 	viper.AddConfigPath("./")
 	viper.SetConfigType("yml")
 	viper.SetConfigName(configPath)
 
 	if err := viper.ReadInConfig(); err != nil {
-		config = container.HostConfig{
-			AutoRemove:   true,
-			PortBindings: nat.PortMap{"8080/tcp": {{HostIP: "0.0.0.0", HostPort: "8090/tcp"}}},
-
-			PublishAllPorts: true,
-		}
+		fmt.Println("Can't read config:", err)
+		os.Exit(1)
 	}
 	viper.Unmarshal(&config)
-
-	return config
 }
 
 // serveCmd represents the serve command
@@ -73,44 +43,67 @@ write a blank version of this file, see the 'jinx containerconfig' subcommand.
 `,
 }
 
-var startSubCmd = &cobra.Command{
-	Use:   "start",
-	Short: "start jinkies!",
-	Long:  `Starts the unconfigured jinkies container`,
-	Run: func(cmd *cobra.Command, args []string) {
-		jinkiesengine.RunRunRun(hydrateFromConfig(containerConfigPath), addConfig(hostConfigPath))
-	},
+func (metadata WorkflowData) startSubCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:   "start",
+		Short: "start jinkies!",
+		Long:  `Starts the unconfigured jinkies container`,
+		Run: func(cmd *cobra.Command, args []string) {
+			jinkiesengine.RunRunRun(metadata.containerName, metadata.pullImages, metadata.containerConfig, metadata.hostConfig)
+		},
+	}
 }
 
-var stopSubCmd = &cobra.Command{
-	Use:   "stop",
-	Short: "Stops your jinkies container_info.",
-	Long:  `No configuration is retained after a stop, so this gets you back to a clean slate.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		jinkiesengine.StopGirl(hydrateFromConfig(containerConfigPath))
-	},
+func (metadata WorkflowData) stopSubCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:   "stop",
+		Short: "Stops your jinkies container_info.",
+		Long:  `No configuration is retained after a stop, so this gets you back to a clean slate.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			jinkiesengine.StopGirl(metadata.containerName)
+		},
+	}
 }
 
 func init() {
+	var (
+		genericHostConfig      container.HostConfig
+		genericContainerConfig container.Config
+
+		containerConfigPath string
+		hostConfigPath      string
+	)
+
+	genericContainerConfig = container.Config{
+		ExposedPorts: nat.PortSet{"8090/tcp": {}},
+		Image:        "jamandbees/jinkies",
+	}
+
+	genericHostConfig = container.HostConfig{
+		AutoRemove:   true,
+		PortBindings: nat.PortMap{"8080/tcp": {{HostIP: "0.0.0.0", HostPort: "8090/tcp"}}},
+	}
+
+	var foo = WorkflowData{containerName: "jinkies", pullImages: true, containerConfig: genericContainerConfig, hostConfig: genericHostConfig}
+
 	rootCmd.AddCommand(serveCmd)
-	serveCmd.AddCommand(startSubCmd)
-	serveCmd.AddCommand(stopSubCmd)
+	serveCmd.AddCommand(foo.startSubCommand())
+	serveCmd.AddCommand(foo.stopSubCommand())
 
 	serveCmd.PersistentFlags().StringVarP(&containerConfigPath, "containerconfig", "c", "", "Path to config file describing your container")
 	serveCmd.PersistentFlags().StringVarP(&hostConfigPath, "hostconfig", "o", "", "Path to config file describing your container host ")
 
-	if hostConfigPath != "" {
-		_, err := os.Open(hostConfigPath)
-		if err != nil {
-			fmt.Printf("Could not open host config file %v \n", err)
-		}
-	}
+	fmt.Printf("%v, %v\n", containerConfigPath, hostConfigPath)
 
 	if containerConfigPath != "" {
-		_, error := os.Open(containerConfigPath)
-		if error != nil {
-			fmt.Printf("Could not open container config file %v \n", error)
-		}
+		hydrateFromConfig(containerConfigPath, &foo.containerConfig)
+	} else {
+		foo.containerConfig = genericContainerConfig
 	}
 
+	if hostConfigPath != "" {
+		hydrateFromConfig(containerConfigPath, &foo.hostConfig)
+	} else {
+		foo.hostConfig = genericHostConfig
+	}
 }
