@@ -1,34 +1,16 @@
 package cmd
 
 import (
-	"fmt"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/go-connections/nat"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"jinx/src/jinkiesengine"
-	"os"
 )
 
-type WorkflowData struct {
+type JinxData struct {
 	containerName string
 	pullImages    bool
 
-	containerConfig container.Config
-	hostConfig      container.HostConfig
-}
-
-func hydrateFromConfig[T any](configPath string, config *T) {
-
-	viper.AddConfigPath("./")
-	viper.SetConfigType("yml")
-	viper.SetConfigName(configPath)
-
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println("Can't read config:", err)
-		os.Exit(1)
-	}
-	viper.Unmarshal(&config)
+	containerConfigPath string
+	hostConfigPath      string
 }
 
 // serveCmd represents the serve command
@@ -43,67 +25,36 @@ write a blank version of this file, see the 'jinx containerconfig' subcommand.
 `,
 }
 
-func (metadata WorkflowData) startSubCommand() *cobra.Command {
+func (jinxData *JinxData) startSubCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "start",
 		Short: "start jinkies!",
 		Long:  `Starts the unconfigured jinkies container`,
 		Run: func(cmd *cobra.Command, args []string) {
-			jinkiesengine.RunRunRun(metadata.containerName, metadata.pullImages, metadata.containerConfig, metadata.hostConfig)
+			jinkiesengine.RunRunRun(jinxData.containerName, jinxData.pullImages, jinxData.containerConfigPath, jinxData.hostConfigPath)
 		},
 	}
 }
 
-func (metadata WorkflowData) stopSubCommand() *cobra.Command {
+func (jinxData *JinxData) stopSubCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "stop",
 		Short: "Stops your jinkies container_info.",
 		Long:  `No configuration is retained after a stop, so this gets you back to a clean slate.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			jinkiesengine.StopGirl(metadata.containerName)
+			jinkiesengine.StopGirl(jinxData.containerName)
 		},
 	}
 }
 
 func init() {
-	var (
-		genericHostConfig      container.HostConfig
-		genericContainerConfig container.Config
 
-		containerConfigPath string
-		hostConfigPath      string
-	)
-
-	genericContainerConfig = container.Config{
-		ExposedPorts: nat.PortSet{"8090/tcp": {}},
-		Image:        "jamandbees/jinkies",
-	}
-
-	genericHostConfig = container.HostConfig{
-		AutoRemove:   true,
-		PortBindings: nat.PortMap{"8080/tcp": {{HostIP: "0.0.0.0", HostPort: "8090/tcp"}}},
-	}
-
-	var foo = WorkflowData{containerName: "jinkies", pullImages: true, containerConfig: genericContainerConfig, hostConfig: genericHostConfig}
+	var jinxRuntime = JinxData{containerName: "jinkies", pullImages: true}
 
 	rootCmd.AddCommand(serveCmd)
-	serveCmd.AddCommand(foo.startSubCommand())
-	serveCmd.AddCommand(foo.stopSubCommand())
+	serveCmd.AddCommand(jinxRuntime.startSubCommand())
+	serveCmd.AddCommand(jinxRuntime.stopSubCommand())
 
-	serveCmd.PersistentFlags().StringVarP(&containerConfigPath, "containerconfig", "c", "", "Path to config file describing your container")
-	serveCmd.PersistentFlags().StringVarP(&hostConfigPath, "hostconfig", "o", "", "Path to config file describing your container host ")
-
-	fmt.Printf("%v, %v\n", containerConfigPath, hostConfigPath)
-
-	if containerConfigPath != "" {
-		hydrateFromConfig(containerConfigPath, &foo.containerConfig)
-	} else {
-		foo.containerConfig = genericContainerConfig
-	}
-
-	if hostConfigPath != "" {
-		hydrateFromConfig(containerConfigPath, &foo.hostConfig)
-	} else {
-		foo.hostConfig = genericHostConfig
-	}
+	serveCmd.PersistentFlags().StringVarP(&jinxRuntime.containerConfigPath, "containerconfig", "c", "", "Path to config file describing your container")
+	serveCmd.PersistentFlags().StringVarP(&jinxRuntime.hostConfigPath, "hostconfig", "o", "", "Path to config file describing your container host ")
 }
