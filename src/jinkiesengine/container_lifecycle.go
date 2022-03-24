@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/docker/go-connections/nat"
-	"github.com/spf13/viper"
 	"io"
+	"jinx/src/utils"
 	"os"
 
 	"github.com/docker/docker/api/types"
@@ -25,19 +25,6 @@ var (
 	}
 )
 
-func hydrateFromConfig[T any](configPath string, config *T) {
-
-	viper.AddConfigPath("./")
-	viper.SetConfigType("yml")
-	viper.SetConfigName(configPath)
-
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println("Can't read config:", err)
-		os.Exit(1)
-	}
-	viper.Unmarshal(&config)
-}
-
 func RunRunRun(containerName string, pullImages bool, containerConfigPath string, hostConfigPath string) container.ContainerCreateCreatedBody {
 
 	containerConfig := container.Config{}
@@ -46,13 +33,13 @@ func RunRunRun(containerName string, pullImages bool, containerConfigPath string
 	if containerConfigPath == "" {
 		containerConfig = defaultContainerConfig
 	} else {
-		hydrateFromConfig(containerConfigPath, &containerConfig)
+		utils.HydrateFromConfig(containerConfigPath, &containerConfig)
 	}
 
 	if hostConfigPath == "" {
 		hostConfig = defaultHostConfig
 	} else {
-		hydrateFromConfig(hostConfigPath, &hostConfig)
+		utils.HydrateFromConfig(hostConfigPath, &hostConfig)
 	}
 
 	ctx := context.Background()

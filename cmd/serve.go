@@ -3,11 +3,12 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"jinx/src/jinkiesengine"
+	"jinx/src/utils"
 )
 
 type JinxData struct {
-	containerName string
-	pullImages    bool
+	ContainerName string
+	PullImages    bool
 
 	containerConfigPath string
 	hostConfigPath      string
@@ -32,7 +33,7 @@ func (jinxData *JinxData) startSubCommand() *cobra.Command {
 		Short: "start jinkies!",
 		Long:  `Starts the unconfigured jinkies container`,
 		Run: func(cmd *cobra.Command, args []string) {
-			jinkiesengine.RunRunRun(jinxData.containerName, jinxData.pullImages, jinxData.containerConfigPath, jinxData.hostConfigPath)
+			jinkiesengine.RunRunRun(jinxData.ContainerName, jinxData.PullImages, jinxData.containerConfigPath, jinxData.hostConfigPath)
 		},
 	}
 }
@@ -43,18 +44,20 @@ func (jinxData *JinxData) stopSubCommand() *cobra.Command {
 		Short: "Stops your jinkies container_info.",
 		Long:  `No configuration is retained after a stop, so this gets you back to a clean slate.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			jinkiesengine.StopGirl(jinxData.containerName)
+			jinkiesengine.StopGirl(jinxData.ContainerName)
 		},
 	}
 }
 
 func init() {
-	var jinxRuntime = JinxData{containerName: "jinkies", pullImages: true}
+	var jinxRuntime = JinxData{ContainerName: "jinkies", PullImages: true}
 
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.AddCommand(serveCmd)
 	serveCmd.AddCommand(jinxRuntime.startSubCommand())
 	serveCmd.AddCommand(jinxRuntime.stopSubCommand())
+
+	utils.HydrateFromConfig(".jinx.yml", &jinxRuntime)
 
 	serveCmd.PersistentFlags().StringVarP(&jinxRuntime.containerConfigPath, "containerconfig", "c", "", "Path to config file describing your container")
 	serveCmd.PersistentFlags().StringVarP(&jinxRuntime.hostConfigPath, "hostconfig", "o", "", "Path to config file describing your container host ")
