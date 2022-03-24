@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"jinx/src/jinkiesengine"
 	"jinx/src/utils"
+	"os"
 )
 
 type JinxData struct {
@@ -50,14 +51,17 @@ func (jinxData *JinxData) stopSubCommand() *cobra.Command {
 }
 
 func init() {
-	var jinxRuntime = JinxData{ContainerName: "jinkies", PullImages: true}
+	jinxRuntime := JinxData{ContainerName: "jinkies", PullImages: true}
+	defaultConfigFile := "jinx.yml"
 
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.AddCommand(serveCmd)
 	serveCmd.AddCommand(jinxRuntime.startSubCommand())
 	serveCmd.AddCommand(jinxRuntime.stopSubCommand())
 
-	utils.HydrateFromConfig(".jinx.yml", &jinxRuntime)
+	if _, err := os.Stat(defaultConfigFile); err == nil {
+		utils.HydrateFromConfig(".jinx.yml", &jinxRuntime)
+	}
 
 	serveCmd.PersistentFlags().StringVarP(&jinxRuntime.containerConfigPath, "containerconfig", "c", "", "Path to config file describing your container")
 	serveCmd.PersistentFlags().StringVarP(&jinxRuntime.hostConfigPath, "hostconfig", "o", "", "Path to config file describing your container host ")
