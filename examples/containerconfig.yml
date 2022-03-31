@@ -1,7 +1,6 @@
 ---
-autoremove=true
-image="jamandbees/jinkies"
-containername="jinkies"
-containerport="8080/tcp"
-hostip="0.0.0.0"
-hostport="8090/tcp"
+autoremove: true
+image: "jamandbees/jinkies:local"
+containerport: "8080/tcp"
+hostip: "0.0.0.0"
+hostport: "8090/tcp"
