@@ -3,16 +3,14 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"jinx/src/jinkiesengine"
-	"jinx/src/utils"
-	"os"
+	jinxtypes "jinx/types"
 )
 
-type JinxData struct {
-	ContainerName string
-	PullImages    bool
+type ServeRuntime struct {
+	GlobalRuntime jinxtypes.JinxData
 
-	containerConfigPath string
-	hostConfigPath      string
+	ContainerConfigPath string
+	HostConfigPath      string
 }
 
 // serveCmd represents the serve command
@@ -28,41 +26,36 @@ or use -c to supply a yaml file overriding the container config (https://pkg.go.
 `,
 }
 
-func (jinxData *JinxData) startSubCommand() *cobra.Command {
+func (server *ServeRuntime) startSubCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "start",
 		Short: "start jinkies!",
 		Long:  `Starts the unconfigured jinkies container`,
 		Run: func(cmd *cobra.Command, args []string) {
-			jinkiesengine.RunRunRun(jinxData.ContainerName, jinxData.PullImages, jinxData.containerConfigPath, jinxData.hostConfigPath)
+			jinkiesengine.RunRunRun(server.GlobalRuntime.ContainerName, server.GlobalRuntime.PullImages, server.ContainerConfigPath, server.HostConfigPath)
 		},
 	}
 }
 
-func (jinxData *JinxData) stopSubCommand() *cobra.Command {
+func (server *ServeRuntime) stopSubCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "stop",
 		Short: "Stops your jinkies container_info.",
 		Long:  `No configuration is retained after a stop, so this gets you back to a clean slate.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			jinkiesengine.StopGirl(jinxData.ContainerName)
+			jinkiesengine.StopGirl(server.GlobalRuntime.ContainerName)
 		},
 	}
 }
 
-func init() {
-	jinxRuntime := JinxData{ContainerName: "jinkies", PullImages: true}
-	defaultConfigFile := "jinx.yml"
+func RegisterServe(jinxRunTime jinxtypes.JinxData) {
+	config := ServeRuntime{GlobalRuntime: jinxRunTime}
 
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.AddCommand(serveCmd)
-	serveCmd.AddCommand(jinxRuntime.startSubCommand())
-	serveCmd.AddCommand(jinxRuntime.stopSubCommand())
+	serveCmd.AddCommand(config.startSubCommand())
+	serveCmd.AddCommand(config.stopSubCommand())
 
-	if _, err := os.Stat(defaultConfigFile); err == nil {
-		utils.HydrateFromConfig(".jinx.yml", &jinxRuntime)
-	}
-
-	serveCmd.PersistentFlags().StringVarP(&jinxRuntime.containerConfigPath, "containerconfig", "c", "", "Path to config file describing your container")
-	serveCmd.PersistentFlags().StringVarP(&jinxRuntime.hostConfigPath, "hostconfig", "o", "", "Path to config file describing your container host ")
+	serveCmd.PersistentFlags().StringVarP(&config.ContainerConfigPath, "containerconfig", "c", "", "Path to config file describing your container")
+	serveCmd.PersistentFlags().StringVarP(&config.HostConfigPath, "hostconfig", "o", "", "Path to config file describing your container host ")
 }
