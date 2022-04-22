@@ -3,3 +3,4 @@ jinx
 .swp
 *.env
 go_build_jinx
+jinx.yml

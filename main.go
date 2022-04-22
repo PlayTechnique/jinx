@@ -11,6 +11,7 @@ import (
 func main() {
 	jinxRuntime := cmd.SetupGlobalConfig()
 
+	cmd.RegisterPlugins(jinxRuntime)
 	cmd.RegisterServe(jinxRuntime)
 	cmd.Execute()
 }
