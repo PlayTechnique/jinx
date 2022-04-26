@@ -54,6 +54,9 @@ func CopyFromContainer(globalRuntime jinxtypes.JinxData, topLevelDir string, pat
 		case tar.TypeDir:
 			os.MkdirAll(outputPath, fileInfo.Mode())
 		case tar.TypeReg:
+			// Typically one would use `defer outputFile.Close()` here. However, the deferred file handle closures
+			// will occur after the loop has exited, so open file handles will accrue through the lifetime of this
+			// loop, a possible cause of file handle exhaustion.
 			outputFile, err := os.OpenFile(outputPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, fileInfo.Mode())
 
 			if err != nil {
