@@ -1,3 +1,12 @@
 ---
+//This file is consumed by the `-j` cli option.
+
+//ContainerName: The name of a container for commands to operate on. Note that jinx does not internally track container
+//  container names, so if your config file `somefile.yml` contains a custom container name and you run 
+//  `jinx serve start -j somefile.yml`, then when you run `jinx serve stop` you should also supply `-j somefile.yml` 
+//  so that the stop command stops the right container.
 ContainerName: "jinkies"
+//PullImages: true - jinx will reach out to docker hub to download the image you're operating on.
+//PullImages: false - jinx will not reach out to docker hub. This is primarily for when you are developing an image and
+//  want to use jinx with that image, but is appropriate for any situation where you do not want to download images.
 PullImages: false
