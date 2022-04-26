@@ -11,37 +11,44 @@ import (
 )
 
 type pluginsRuntime struct {
-	globalRuntime jinxtypes.JinxData
+	GlobalRuntime jinxtypes.JinxData
+
+	TopLevelOutDir string
+	RemovePlugins  bool
 }
 
-// pluginsCmd represents the plugins command
-func (pluginsSetup *pluginsRuntime) pluginsCmd() *cobra.Command {
+func (pluginsRuntime *pluginsRuntime) PluginsCmd() *cobra.Command {
 
 	return &cobra.Command{
 		Use:   "plugins",
 		Short: "Retrieve lists of plugins in various formats",
-		Long: `I regularly want to freeze the plugins inside a container, so that successive containers can 
+		Long: `I regularly want to freeze the plugins inside a container, so that successive containers can
 be rebuilt with the precise same plugins. However, if you are using the cli tooling for installing a Jenkins plugin then
 you only know what dependencies are required after the plugins have been installed.
 
-This command copies jinx itself into your container, where it figures out some shenanigans and returns the plugins.txt`,
+This command copies plugins from the container into a temporary directory, and uses the copied files to generate the
+plugins information you request. This temporary directory is auto-deleted after use.
+
+If you specify a specify an output directory, that directory is not auto-deleted after use.
+`,
 		Run: func(cmd *cobra.Command, args []string) {
-			jenkins.Plugins(pluginsSetup.globalRuntime)
+			jenkins.Plugins(pluginsRuntime.GlobalRuntime, pluginsRuntime.TopLevelOutDir)
 		},
 	}
 }
 
 func RegisterPlugins(jinxRunTime jinxtypes.JinxData) {
-	config := pluginsRuntime{globalRuntime: jinxRunTime}
+	config := pluginsRuntime{GlobalRuntime: jinxRunTime, TopLevelOutDir: "", RemovePlugins: true}
 
-	rootCmd.AddCommand(config.pluginsCmd())
+	// Go invokes functions at the last possible second, so if we try to do:
+	// rootCmd.AddCommand(config.PluginsCmd()) and config.PluginsCmd().Flags()...
+	// then cobra receives a function to invoke, not a pointer to a cobra command, and adding the
+	// help flags doesn't work. Assigning the function to a variable, though, invokes the function
+	// when the variable is constructed and the variable contains the pointer, not a function.
+	commander := config.PluginsCmd()
 
-	// Here you will define your flags and configuration settings.
+	rootCmd.AddCommand(commander)
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
+	commander.Flags().StringVar(&config.TopLevelOutDir, "outputdir", "", "Directory to copy your plugins into.")
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// pluginsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
