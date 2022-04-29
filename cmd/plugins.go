@@ -15,6 +15,7 @@ type pluginsRuntime struct {
 
 	TopLevelOutDir string
 	RemovePlugins  bool
+	OutputFormat   string
 }
 
 func (pluginsRuntime *pluginsRuntime) PluginsCmd() *cobra.Command {
@@ -30,15 +31,19 @@ This command copies plugins from the container into a temporary directory, and u
 plugins information you request. This temporary directory is auto-deleted after use.
 
 If you specify a specify an output directory, that directory is not auto-deleted after use.
+
+I also regularly use intellij to update jinkies (https://github.com/playtechnique/jinkies), where I use a build.gradle
+file to control autocompletion in the IDE. The plugins command can output the right build.gradle format for the 
+dependencies section of a build.gradle file, so that IDEs can autocomplete functionality for the plugins that you have.
 `,
 		Run: func(cmd *cobra.Command, args []string) {
-			jenkins.Plugins(pluginsRuntime.GlobalRuntime, pluginsRuntime.TopLevelOutDir)
+			jenkins.Plugins(pluginsRuntime.GlobalRuntime, pluginsRuntime.TopLevelOutDir, pluginsRuntime.OutputFormat)
 		},
 	}
 }
 
 func RegisterPlugins(jinxRunTime jinxtypes.JinxData) {
-	config := pluginsRuntime{GlobalRuntime: jinxRunTime, TopLevelOutDir: "", RemovePlugins: true}
+	config := pluginsRuntime{GlobalRuntime: jinxRunTime, TopLevelOutDir: "", RemovePlugins: true, OutputFormat: "plugins.txt"}
 
 	// Go invokes functions at the last possible second, so if we try to do:
 	// rootCmd.AddCommand(config.PluginsCmd()) and config.PluginsCmd().Flags()...
@@ -50,5 +55,5 @@ func RegisterPlugins(jinxRunTime jinxtypes.JinxData) {
 	rootCmd.AddCommand(commander)
 
 	commander.Flags().StringVar(&config.TopLevelOutDir, "outputdir", "", "Directory to copy your plugins into.")
-
+	commander.Flags().StringVar(&config.OutputFormat, "format", "plugins.txt", "Display format for your plugins output (plugins.txt or build.gradle)")
 }
