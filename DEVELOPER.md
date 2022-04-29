@@ -11,3 +11,4 @@
 * Conceptually, I think of the commands as being self-contained scripts that happen to be written in go. As such, I
     do not bubble error values back up to the calling process; instead the commands exit locally to the error.
 * Remember that we're not even at version 0.5 yet. Lots of this thing is in flux. Improvements are beautiful and welcome.
+* In general, I'm comfortable handling flag/argument validation inside the commands.

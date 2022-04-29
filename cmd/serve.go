@@ -21,7 +21,7 @@ var serveCmd = &cobra.Command{
 quickly for reasons unrelated to a specific job. Maybe you want to prototype some jcasc settings or something.
 
 Maybe you want two instances of jinkies running at once? Use the -o flag to supply a yaml file overriding the hostconfig
-(https://pkg.go.dev/github.com/docker/docker@v20.10.13+incompatible/api/types/container#HostConfig),
+(https://pkg.go.dev/github.com/docker/docker@v20.10.14+incompatible/api/types/container#HostConfig),
 or use -c to supply a yaml file overriding the container config (https://pkg.go.dev/github.com/docker/docker@v20.10.13+incompatible/api/types/container#Config).
 `,
 }
@@ -30,7 +30,7 @@ func (server *ServeRuntime) startSubCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "start",
 		Short: "start jinkies!",
-		Long:  `Starts the unconfigured jinkies container`,
+		Long:  `Starts the jinkies container`,
 		Run: func(cmd *cobra.Command, args []string) {
 			jinkiesengine.RunRunRun(server.GlobalRuntime.ContainerName, server.GlobalRuntime.PullImages, server.ContainerConfigPath, server.HostConfigPath)
 		},
@@ -53,9 +53,12 @@ func RegisterServe(jinxRunTime jinxtypes.JinxData) {
 
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.AddCommand(serveCmd)
+
 	serveCmd.AddCommand(config.startSubCommand())
 	serveCmd.AddCommand(config.stopSubCommand())
 
 	serveCmd.PersistentFlags().StringVarP(&config.ContainerConfigPath, "containerconfig", "c", "", "Path to config file describing your container")
 	serveCmd.PersistentFlags().StringVarP(&config.HostConfigPath, "hostconfig", "o", "", "Path to config file describing your container host ")
+
+	serveCmd.Flags().StringVarP(&config.HostConfigPath, "jenkinsfile", "e", "", "Path on the host to a Jenkinsfile to use as a seed job")
 }
