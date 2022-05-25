@@ -31,8 +31,9 @@ func (server *ServeRuntime) startSubCommand() *cobra.Command {
 		Use:   "start",
 		Short: "start jinkies!",
 		Long:  `Starts the jinkies container`,
-		Run: func(cmd *cobra.Command, args []string) {
-			jinkiesengine.RunRunRun(server.GlobalRuntime.ContainerName, server.GlobalRuntime.PullImages, server.ContainerConfigPath, server.HostConfigPath)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			_, err := jinkiesengine.RunRunRun(server.GlobalRuntime.ContainerName, server.GlobalRuntime.PullImages, server.ContainerConfigPath, server.HostConfigPath)
+			return err
 		},
 	}
 }
@@ -42,8 +43,8 @@ func (server *ServeRuntime) stopSubCommand() *cobra.Command {
 		Use:   "stop",
 		Short: "Stops your jinkies container_info.",
 		Long:  `No configuration is retained after a stop, so this gets you back to a clean slate.`,
-		Run: func(cmd *cobra.Command, args []string) {
-			jinkiesengine.StopGirl(server.GlobalRuntime.ContainerName)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return jinkiesengine.StopGirl(server.GlobalRuntime.ContainerName)
 		},
 	}
 }
