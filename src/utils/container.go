@@ -10,28 +10,30 @@ import (
 	"path"
 )
 
-func CopyFromContainer(globalRuntime jinxtypes.JinxData, topLevelDir string, pathToCopy string) {
+func CopyFromContainer(globalRuntime jinxtypes.JinxData, topLevelDir string, pathToCopy string) error {
 	ctx := context.Background()
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	tarReader, _, err := cli.CopyFromContainer(ctx, globalRuntime.ContainerName, pathToCopy)
 
 	// CopyFromContainer says it's our responsibility to close this file handle.
-	defer func() {
+	defer func() error {
 		err := tarReader.Close()
 
 		if err != nil {
-			panic(err)
+			return err
 		}
+
+		return nil
 	}()
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	tr := tar.NewReader(tarReader)
@@ -44,7 +46,7 @@ func CopyFromContainer(globalRuntime jinxtypes.JinxData, topLevelDir string, pat
 		}
 
 		if err != io.EOF && err != nil {
-			panic(err)
+			return err
 		}
 
 		outputPath := path.Join(topLevelDir, hdr.Name)
@@ -61,15 +63,17 @@ func CopyFromContainer(globalRuntime jinxtypes.JinxData, topLevelDir string, pat
 
 			if err != nil {
 				outputFile.Close()
-				panic(err)
+				return err
 			}
 
 			if _, err := io.Copy(outputFile, tr); err != nil {
 				outputFile.Close()
-				panic(err)
+				return err
 			}
 
 			outputFile.Close()
 		}
 	}
+
+	return nil
 }

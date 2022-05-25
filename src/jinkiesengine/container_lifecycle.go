@@ -25,7 +25,7 @@ var (
 	}
 )
 
-func RunRunRun(containerName string, pullImages bool, containerConfigPath string, hostConfigPath string) container.ContainerCreateCreatedBody {
+func RunRunRun(containerName string, pullImages bool, containerConfigPath string, hostConfigPath string) (*container.ContainerCreateCreatedBody, error) {
 
 	containerConfig := container.Config{}
 	hostConfig := container.HostConfig{}
@@ -45,7 +45,7 @@ func RunRunRun(containerName string, pullImages bool, containerConfigPath string
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	imageName := containerConfig.Image
@@ -53,7 +53,7 @@ func RunRunRun(containerName string, pullImages bool, containerConfigPath string
 	if pullImages {
 		out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
 		defer out.Close()
@@ -63,26 +63,28 @@ func RunRunRun(containerName string, pullImages bool, containerConfigPath string
 	resp, err := cli.ContainerCreate(ctx, &containerConfig, &hostConfig,
 		nil, nil, containerName)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	fmt.Println(resp.ID)
 
-	return resp
+	return &resp, err
 }
 
-func StopGirl(containerName string) {
+func StopGirl(containerName string) error {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	if stopErr := cli.ContainerStop(ctx, containerName, nil); err != nil {
-		panic(stopErr)
+		return stopErr
 	}
+
+	return nil
 }

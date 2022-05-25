@@ -8,7 +8,7 @@
   runtime struct. Because it's nicer to not use free floating, global variables, each command is a method on this
   custom runtime struct. There's one or two small hoops to jump through implementing this, but it keeps everything
   pretty tidy and simple to reason about.
-* Conceptually, I think of the commands as being self-contained scripts that happen to be written in go. As such, I
-    do not bubble error values back up to the calling process; instead the commands exit locally to the error.
+* Errors are returned from functions in order to facilitate testability. To make this work with cobra, use `RunE`, not
+  `Run` to register your command.
 * Remember that we're not even at version 0.5 yet. Lots of this thing is in flux. Improvements are beautiful and welcome.
 * In general, I'm comfortable handling flag/argument validation inside the commands.
