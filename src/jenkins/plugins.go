@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"syscall"
 	"text/template"
 )
 
@@ -31,7 +30,7 @@ func (self *pluginsData) gatherPlugins(path string, info fs.DirEntry, err error)
 		content, err := os.ReadFile(path)
 
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		xml.Unmarshal(content, &plugin)
@@ -41,16 +40,15 @@ func (self *pluginsData) gatherPlugins(path string, info fs.DirEntry, err error)
 	return nil
 }
 
-func Plugins(globalRuntime jinxtypes.JinxData, topLevelDir string, outputFormat string) {
+func Plugins(globalRuntime jinxtypes.JinxData, topLevelDir string, outputFormat string) (err error) {
 	validOutputs, err := regexp.Compile("plugins\\.txt|build\\.gradle")
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	if !validOutputs.MatchString(outputFormat) {
-		fmt.Println(fmt.Errorf("Valid output formats are plugins.txt and build.gradle. You supplied %s", outputFormat))
-		syscall.Exit(2)
+		return fmt.Errorf("Valid output formats are plugins.txt and build.gradle. You supplied %s", outputFormat)
 	}
 
 	// ToDo: pathToCopy should be populated by a call inside the container userland to `exec`.
@@ -75,7 +73,7 @@ func Plugins(globalRuntime jinxtypes.JinxData, topLevelDir string, outputFormat 
 	err = filepath.WalkDir(topLevelDir, pluginsCollection.gatherPlugins)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	var formatter = template.New(outputFormat)
@@ -91,8 +89,10 @@ func Plugins(globalRuntime jinxtypes.JinxData, topLevelDir string, outputFormat 
 	for _, plugin := range pluginsCollection.Collection {
 		err = formatter.Execute(os.Stdout, plugin)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 	}
+
+	return err
 }

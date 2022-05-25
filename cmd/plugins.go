@@ -1,7 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
@@ -36,8 +32,8 @@ I also regularly use intellij to update jinkies (https://github.com/playtechniqu
 file to control autocompletion in the IDE. The plugins command can output the right build.gradle format for the 
 dependencies section of a build.gradle file, so that IDEs can autocomplete functionality for the plugins that you have.
 `,
-		Run: func(cmd *cobra.Command, args []string) {
-			jenkins.Plugins(pluginsRuntime.GlobalRuntime, pluginsRuntime.TopLevelOutDir, pluginsRuntime.OutputFormat)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return jenkins.Plugins(pluginsRuntime.GlobalRuntime, pluginsRuntime.TopLevelOutDir, pluginsRuntime.OutputFormat)
 		},
 	}
 }
