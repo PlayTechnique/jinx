@@ -1,8 +1,7 @@
-name: 'Compile Jinx'
+name: 'Compile and Release Jinx'
 
-# **What it does**: Renders the content of every page and check all internal links.
-# **Why we have it**: To make sure all links connect correctly.
-# **Who does it impact**: Docs content.
+# **What it does**: Compiles Jinx
+# **Why we have it**: Validate it builds remotely, get releases running.
 
 on:
   workflow_dispatch:
