@@ -1,4 +1,4 @@
-name: 'Compile and Release Jinx'
+name: 'Compile'
 
 # **What it does**: Compiles Jinx
 # **Why we have it**: Validate it builds remotely, get releases running.
