@@ -1,3 +1,5 @@
+name: "Compile and Release on Tag Push"
+
 on:
   push:
     tags:
