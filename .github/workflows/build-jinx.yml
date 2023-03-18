@@ -1,0 +1,21 @@
+name: 'Link Checker: All English'
+
+# **What it does**: Renders the content of every page and check all internal links.
+# **Why we have it**: To make sure all links connect correctly.
+# **Who does it impact**: Docs content.
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build-a-jinx:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: "checkout"
+        uses: actions/checkout@3
+        with:
+          ref: ${{ env.GITHUB_REF }}
+#        - name: "compile jinx"
+#          run:|
+#            go build -o jinx
