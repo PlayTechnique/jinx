@@ -1,4 +1,4 @@
-name: 'Link Checker: All English'
+name: 'Compile Jinx'
 
 # **What it does**: Renders the content of every page and check all internal links.
 # **Why we have it**: To make sure all links connect correctly.
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: "checkout"
-        uses: actions/checkout@3
+        uses: actions/checkout@v3
         with:
           ref: ${{ env.GITHUB_REF }}
 #        - name: "compile jinx"
