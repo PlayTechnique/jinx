@@ -7,7 +7,7 @@ import (
 )
 
 type pluginsRuntime struct {
-	GlobalRuntime jinxtypes.JinxData
+	GlobalRuntime jinxtypes.JinxGlobalRuntime
 
 	TopLevelOutDir string
 	RemovePlugins  bool
@@ -38,7 +38,7 @@ dependencies section of a build.gradle file, so that IDEs can autocomplete funct
 	}
 }
 
-func RegisterPlugins(jinxRunTime jinxtypes.JinxData) {
+func RegisterPlugins(jinxRunTime jinxtypes.JinxGlobalRuntime) {
 	config := pluginsRuntime{GlobalRuntime: jinxRunTime, TopLevelOutDir: "", RemovePlugins: true, OutputFormat: "plugins.txt"}
 
 	// Go invokes functions at the last possible second, so if we try to do:

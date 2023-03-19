@@ -1,7 +1,7 @@
-name: 'Compile'
+name: 'Test'
 
-# **What it does**: Compiles Jinx
-# **Why we have it**: Validate it builds remotely, get releases running.
+# **What it does**: Runs Jinx' go tests
+# **Why we have it**: Validate it builds, runs teh tests
 
 on:
   workflow_dispatch:
@@ -15,6 +15,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ env.GITHUB_REF }}
-      - name: "compile jinx"
+      - name: "test jinx"
         run: |
-          go build -o jinx
+          go test

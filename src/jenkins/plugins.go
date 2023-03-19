@@ -40,7 +40,7 @@ func (self *pluginsData) gatherPlugins(path string, info fs.DirEntry, err error)
 	return nil
 }
 
-func Plugins(globalRuntime jinxtypes.JinxData, topLevelDir string, outputFormat string) (err error) {
+func Plugins(globalRuntime jinxtypes.JinxGlobalRuntime, topLevelDir string, outputFormat string) (err error) {
 	validOutputs, err := regexp.Compile("plugins\\.txt|build\\.gradle")
 
 	if err != nil {

@@ -7,7 +7,7 @@ import (
 import jinxtypes "jinx/types"
 
 func TestPlugins(t *testing.T) {
-	jinxRuntime := jinxtypes.JinxData{
+	jinxRuntime := jinxtypes.JinxGlobalRuntime{
 		ContainerName: "roflcopter",
 		PullImages:    false,
 	}

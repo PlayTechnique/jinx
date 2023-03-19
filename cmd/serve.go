@@ -7,13 +7,14 @@ import (
 )
 
 type ServeRuntime struct {
-	GlobalRuntime jinxtypes.JinxData
+	GlobalRuntime jinxtypes.JinxGlobalRuntime
 
 	ContainerConfigPath string
 	HostConfigPath      string
 }
 
-// serveCmd represents the serve command
+// serveCmd represents the serve command.
+// It's just a namespace for additional subcommands.
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Subcommands to allow you to start or stop a jinkies.",
@@ -49,7 +50,7 @@ func (server *ServeRuntime) stopSubCommand() *cobra.Command {
 	}
 }
 
-func RegisterServe(jinxRunTime jinxtypes.JinxData) {
+func RegisterServe(jinxRunTime jinxtypes.JinxGlobalRuntime) {
 	config := ServeRuntime{GlobalRuntime: jinxRunTime}
 
 	rootCmd.CompletionOptions.DisableDefaultCmd = true

@@ -10,7 +10,7 @@ import (
 	"path"
 )
 
-func CopyFromContainer(globalRuntime jinxtypes.JinxData, topLevelDir string, pathToCopy string) error {
+func CopyFromContainer(globalRuntime jinxtypes.JinxGlobalRuntime, topLevelDir string, pathToCopy string) error {
 	ctx := context.Background()
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())

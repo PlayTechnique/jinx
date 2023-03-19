@@ -1,6 +1,5 @@
 /*
 Copyright © 2022 Gwyn <gwyn@playtechnique.io>
-
 */
 package main
 
@@ -13,5 +12,6 @@ func main() {
 
 	cmd.RegisterPlugins(jinxRuntime)
 	cmd.RegisterServe(jinxRuntime)
+	cmd.RegisterNew(jinxRuntime)
 	cmd.Execute()
 }
