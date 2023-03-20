@@ -10,53 +10,63 @@ import (
 var version []byte
 
 func CreateLayout(topLevelDir string) error {
-	createDirectories(topLevelDir)
-	err := createFiles()
+	_, err := createFiles(topLevelDir)
 
 	return err
 }
 
-func createDirectories(topLevelDir string) []string {
-	directories := []string{"Docker", "init.groovy.d", "secrets", "configFiles"}
-	createdDirectories := []string{}
+func createFiles(topLevelDir string) ([]string, error) {
+	var createdFiles []string
 
-	for _, dir := range directories {
-		os.Mkdir(topLevelDir+dir, 0755)
-		createdDirectories = append(createdDirectories, topLevelDir+dir)
+	filename, err := writeDockerFile(topLevelDir+"/Docker", "Dockerfile")
+
+	if err != nil {
+		log.Fatal(err)
+		return createdFiles, err
 	}
 
-	return createdDirectories
+	createdFiles = append(createdFiles, filename)
+
+	filename, err = writeVersionFile("version.txt")
+
+	if err != nil {
+		log.Fatal(err)
+		return createdFiles, err
+	}
+
+	createdFiles = append(createdFiles, filename)
+
+	filename, err = writeJinxConfig(topLevelDir+"/configFiles", "jinx.yml")
+
+	if err != nil {
+		log.Fatal(err)
+		return createdFiles, err
+	}
+
+	createdFiles = append(createdFiles, filename)
+
+	filename, err = writeContainerConfig(topLevelDir+"/configFiles", "containerconfig.yml")
+
+	if err != nil {
+		log.Fatal(err)
+		return createdFiles, err
+	}
+
+	createdFiles = append(createdFiles, filename)
+
+	filename, err = writeHostConfig(topLevelDir+"/configFiles", "hostconfig.yml")
+
+	if err != nil {
+		log.Fatal(err)
+		return createdFiles, err
+	}
+
+	createdFiles = append(createdFiles, filename)
+
+	return createdFiles, err
 }
 
-func createFiles() error {
-	err := writeDockerFile("Docker", "Dockerfile")
-
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-
-	err = writeVersionFile("version.txt")
-
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-
-	err = writeJinxConfig("configFiles", "jinx.yml")
-
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-
-	writeContainerConfig("configFiles", "containerconfig.yml")
-	writeHostConfig("configFiles", "hostconfig.yml")
-
-	return err
-}
-
-func writeDockerFile(dir string, filename string) error {
+func writeDockerFile(dir string, filename string) (string, error) {
 	dockerfile := `FROM jenkins/jenkins:lts-jdk11
 
 ARG casc_jenkins_config
@@ -107,17 +117,22 @@ ADD ${SECRETS_DIR}/ /run/secrets/
 ADD ./init.groovy.d/ ${JENKINS_HOME}/init.groovy.d
 ADD ./jinkies_support_files/ ${JENKINS_HOME}/jinkies_support_files
 `
-
-	err := os.WriteFile(dir+"/"+filename, []byte(dockerfile), 0700)
+	err := os.MkdirAll(dir, 0700)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return err
+	err = os.WriteFile(dir+"/"+filename, []byte(dockerfile), 0700)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return dir + "/" + filename, err
 }
 
-func writeVersionFile(filename string) error {
+func writeVersionFile(filename string) (string, error) {
 	version := `
 0.0.0-alpha-prealpha
 `
@@ -127,26 +142,31 @@ func writeVersionFile(filename string) error {
 		log.Fatal(err)
 	}
 
-	return err
+	return filename, err
 }
 
-func writeJinxConfig(dir string, filename string) error {
+func writeJinxConfig(dir string, filename string) (string, error) {
 	config := `
 ---
 ContainerName: {{ContainerName}}
 PullImages: false
 `
-
-	err := os.WriteFile(dir+"/"+filename, []byte(config), 0700)
+	err := os.MkdirAll(dir, 0755)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return err
+	err = os.WriteFile(dir+"/"+filename, []byte(config), 0700)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return dir + "/" + filename, err
 }
 
-func writeContainerConfig(dir string, filename string) error {
+func writeContainerConfig(dir string, filename string) (string, error) {
 	config := `
 ---
 autoremove: true
@@ -159,17 +179,23 @@ hostip: "0.0.0.0"
 hostport: "8090/tcp"
 image: "jamandbees/jinkies:local"
 `
-	err := os.WriteFile(dir+"/"+filename, []byte(config), 0700)
+	err := os.MkdirAll(dir, 0755)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return err
+	err = os.WriteFile(dir+"/"+filename, []byte(config), 0700)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return dir + "/" + filename, err
 
 }
 
-func writeHostConfig(dir string, filename string) error {
+func writeHostConfig(dir string, filename string) (string, error) {
 	config := `
 ---
 AutoRemove: true
@@ -180,11 +206,17 @@ PortBindings:
     HostIp: "0.0.0.0"
     HostPort: "8091/tcp"
 `
-	err := os.WriteFile(dir+"/"+filename, []byte(config), 0700)
+	err := os.MkdirAll(dir, 0755)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return err
+	err = os.WriteFile(dir+"/"+filename, []byte(config), 0700)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return dir + "/" + filename, err
 }
