@@ -2,20 +2,22 @@ package jinkiesengine
 
 import (
 	_ "embed"
+	jinxtypes "jinx/types"
 	"log"
 	"os"
+	"text/template"
 )
 
 //go:embed embed_files/version.txt
 var version []byte
 
-func CreateLayout(topLevelDir string) error {
-	_, err := createFiles(topLevelDir)
+func CreateLayout(topLevelDir string, globalRuntime jinxtypes.JinxGlobalRuntime) error {
+	_, err := createFiles(topLevelDir, globalRuntime)
 
 	return err
 }
 
-func createFiles(topLevelDir string) ([]string, error) {
+func createFiles(topLevelDir string, globalRuntime jinxtypes.JinxGlobalRuntime) ([]string, error) {
 	var createdFiles []string
 
 	filename, err := writeDockerFile(topLevelDir+"/Docker", "Dockerfile")
@@ -36,7 +38,7 @@ func createFiles(topLevelDir string) ([]string, error) {
 
 	createdFiles = append(createdFiles, filename)
 
-	filename, err = writeJinxConfig(topLevelDir+"/configFiles", "jinx.yml")
+	filename, err = writeJinxConfig(topLevelDir+"/configFiles", "jinx.yml", globalRuntime)
 
 	if err != nil {
 		log.Fatal(err)
@@ -145,25 +147,42 @@ func writeVersionFile(filename string) (string, error) {
 	return filename, err
 }
 
-func writeJinxConfig(dir string, filename string) (string, error) {
+func writeJinxConfig(dir string, filename string, globalRuntime jinxtypes.JinxGlobalRuntime) (string, error) {
 	config := `
 ---
-ContainerName: {{ContainerName}}
+ContainerName: {{ .ContainerName }}
 PullImages: false
 `
-	err := os.MkdirAll(dir, 0755)
+	t, err := template.New("jinxConfig").Parse(config)
 
 	if err != nil {
 		log.Fatal(err)
+		return "", err
 	}
 
-	err = os.WriteFile(dir+"/"+filename, []byte(config), 0700)
+	err = os.MkdirAll(dir, 0755)
 
 	if err != nil {
 		log.Fatal(err)
+		return dir, err
 	}
 
-	return dir + "/" + filename, err
+	jinxConfigPath := dir + "/" + filename
+	file, err := os.Create(jinxConfigPath)
+
+	if err != nil {
+		log.Fatal(err)
+		return jinxConfigPath, err
+	}
+
+	if err != nil {
+		log.Fatal(err)
+		return jinxConfigPath, err
+	}
+
+	err = t.Execute(file, globalRuntime)
+
+	return jinxConfigPath, err
 }
 
 func writeContainerConfig(dir string, filename string) (string, error) {

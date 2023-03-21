@@ -4,17 +4,24 @@ import (
 	"bufio"
 	"github.com/stretchr/testify/assert"
 	"io/fs"
+	jinxtypes "jinx/types"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 )
 
+var globalRuntime = jinxtypes.JinxGlobalRuntime{
+	ContainerName: "containerofdestiny",
+	PullImages:    false,
+}
+
 func TestCreateLayout(t *testing.T) {
+
 	testDir, _ := os.MkdirTemp("", "")
 	os.Chdir(testDir)
 	defer os.RemoveAll(testDir)
-	err := CreateLayout(testDir)
+	err := CreateLayout(testDir, globalRuntime)
 
 	assert.Nil(t, err)
 
@@ -29,7 +36,7 @@ func TestCreateLayoutHasContentInAllVariables(t *testing.T) {
 	testDir, _ := os.MkdirTemp("", "")
 	os.Chdir(testDir)
 	defer os.RemoveAll(testDir)
-	err := CreateLayout(testDir)
+	err := CreateLayout(testDir, globalRuntime)
 
 	assert.Nil(t, err)
 
@@ -65,7 +72,7 @@ func TestCreateLayoutHasContentInAllVariables(t *testing.T) {
 				line := scanner.Text()
 
 				if strings.Contains(line, "{{") {
-					assert.FailNowf(t, "File "+path+" contains a template in line "+line, "All template variables are populated")
+					assert.FailNowf(t, "File "+path+" contains a template in line <"+line+">", "All template variables are populated")
 				}
 			}
 		}
