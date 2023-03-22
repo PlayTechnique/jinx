@@ -153,7 +153,7 @@ func writeJinxConfig(dir string, filename string, globalRuntime jinxtypes.JinxGl
 ContainerName: {{ .ContainerName }}
 PullImages: false
 `
-	t, err := template.New("jinxConfig").Parse(config)
+	t, err := template.New("jinxConfig").Option("missingkey=error").Parse(config)
 
 	if err != nil {
 		log.Fatal(err)
