@@ -18,14 +18,15 @@ func (createLayout *CreateLayoutRuntime) newCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "new",
 		Short: "Create a new directory and config file layout for a jinkies!",
-		Long: `There are a lot of moving parts to getting Jenkins configured programatically, including init.groovy.d files,
-a Dockerfile, build script stuff, the whole nine yards.
+		Args:  cobra.ExactArgs(1),
+		Long: `Run 'jinx new <dir>' to set up the skeleton of a new jinx project in a new starting dir! Use 'jinx new .' 
+to use the current dir.
 
-Instead of forcing you to do just download my upstream container, I figured a project generator would put more control
-back in your hands.
+There are a lot of moving parts to getting Jenkins configured programatically, including init.groovy.d files,
+a Dockerfile, build script stuff, the whole nine yards.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := jinkiesengine.CreateLayout(".", createLayout.GlobalRuntime)
+			err := jinkiesengine.CreateLayout(createLayout.GlobalRuntime, args[0])
 			return err
 		},
 	}

@@ -11,7 +11,14 @@ import (
 //go:embed embed_files/version.txt
 var version []byte
 
-func CreateLayout(topLevelDir string, globalRuntime jinxtypes.JinxGlobalRuntime) error {
+// CreateLayout first verifies if the directory exists. If it does, it returns os.ErrExist.
+func CreateLayout(globalRuntime jinxtypes.JinxGlobalRuntime, topLevelDir string) error {
+	if _, err := os.Stat(topLevelDir); os.IsNotExist(err) {
+
+		// Directory exists
+		log.Println(topLevelDir + "already exists. Putting files in...")
+	}
+
 	_, err := createFiles(topLevelDir, globalRuntime)
 
 	return err
@@ -123,12 +130,14 @@ ADD ./jinkies_support_files/ ${JENKINS_HOME}/jinkies_support_files
 
 	if err != nil {
 		log.Fatal(err)
+		return dir, err
 	}
 
 	err = os.WriteFile(dir+"/"+filename, []byte(dockerfile), 0700)
 
 	if err != nil {
 		log.Fatal(err)
+		// return's on the next line
 	}
 
 	return dir + "/" + filename, err

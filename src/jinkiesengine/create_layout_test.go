@@ -17,7 +17,7 @@ func TestCreateLayout(t *testing.T) {
 	testDir, _ := os.MkdirTemp("", "")
 	os.Chdir(testDir)
 	defer os.RemoveAll(testDir)
-	err := CreateLayout(testDir, globalRuntime)
+	err := CreateLayout(globalRuntime, testDir)
 
 	assert.Nil(t, err)
 
