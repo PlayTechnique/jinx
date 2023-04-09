@@ -5,13 +5,29 @@ package main
 
 import (
 	"jinx/cmd"
+	jinxtypes "jinx/types"
 )
 
 func main() {
-	jinxRuntime := cmd.SetupGlobalConfig()
+	configFile := jinxtypes.ConfigFileLocation{
+		ConfigFilePath: "configFiles/jinx.yml",
+	}
 
-	cmd.RegisterPlugins(jinxRuntime)
-	cmd.RegisterServe(jinxRuntime)
-	cmd.RegisterNew(jinxRuntime)
+	cmd.RegisterNew()
+
+	var err error
+
+	err = cmd.RegisterPlugins(configFile)
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = cmd.RegisterServe(configFile)
+
+	if err != nil {
+		panic(err)
+	}
+
 	cmd.Execute()
 }

@@ -2,36 +2,38 @@ package jinkiesengine
 
 import (
 	_ "embed"
+	"fmt"
+	"gopkg.in/yaml.v2"
 	jinxtypes "jinx/types"
 	"log"
 	"os"
-	"text/template"
 )
 
 //go:embed embed_files/version.txt
 var version []byte
 
-// CreateLayout first verifies if the directory exists. If it does, it returns os.ErrExist.
-func CreateLayout(globalRuntime jinxtypes.JinxGlobalRuntime, topLevelDir string) error {
+// Initialise first verifies if the directory exists. If it does, it returns os.ErrExist.
+func Initialise(containerName string, topLevelDir string) (jinxtypes.JinxGlobalRuntime, []string, error) {
 	if _, err := os.Stat(topLevelDir); os.IsNotExist(err) {
 
 		// Directory exists
-		log.Println(topLevelDir + "already exists. Putting files in...")
+		log.Println(topLevelDir + " already exists. Putting files in...")
 	}
 
-	_, err := createFiles(topLevelDir, globalRuntime)
+	globalRuntime, createdFiles, err := createFiles(topLevelDir, containerName)
 
-	return err
+	return globalRuntime, createdFiles, err
 }
 
-func createFiles(topLevelDir string, globalRuntime jinxtypes.JinxGlobalRuntime) ([]string, error) {
+func createFiles(topLevelDir string, containerName string) (jinxtypes.JinxGlobalRuntime, []string, error) {
 	var createdFiles []string
+	var globalRuntime jinxtypes.JinxGlobalRuntime
 
 	filename, err := writeDockerFile(topLevelDir+"/Docker", "Dockerfile")
 
 	if err != nil {
 		log.Fatal(err)
-		return createdFiles, err
+		return globalRuntime, createdFiles, err
 	}
 
 	createdFiles = append(createdFiles, filename)
@@ -40,16 +42,16 @@ func createFiles(topLevelDir string, globalRuntime jinxtypes.JinxGlobalRuntime) 
 
 	if err != nil {
 		log.Fatal(err)
-		return createdFiles, err
+		return globalRuntime, createdFiles, err
 	}
 
 	createdFiles = append(createdFiles, filename)
 
-	filename, err = writeJinxConfig(topLevelDir+"/configFiles", "jinx.yml", globalRuntime)
+	globalRuntime, filename, err = writeJinxConfig(topLevelDir+"/configFiles", "jinx.yml", containerName)
 
 	if err != nil {
 		log.Fatal(err)
-		return createdFiles, err
+		return globalRuntime, createdFiles, err
 	}
 
 	createdFiles = append(createdFiles, filename)
@@ -58,7 +60,7 @@ func createFiles(topLevelDir string, globalRuntime jinxtypes.JinxGlobalRuntime) 
 
 	if err != nil {
 		log.Fatal(err)
-		return createdFiles, err
+		return globalRuntime, createdFiles, err
 	}
 
 	createdFiles = append(createdFiles, filename)
@@ -67,12 +69,12 @@ func createFiles(topLevelDir string, globalRuntime jinxtypes.JinxGlobalRuntime) 
 
 	if err != nil {
 		log.Fatal(err)
-		return createdFiles, err
+		return globalRuntime, createdFiles, err
 	}
 
 	createdFiles = append(createdFiles, filename)
 
-	return createdFiles, err
+	return globalRuntime, createdFiles, err
 }
 
 func writeDockerFile(dir string, filename string) (string, error) {
@@ -156,42 +158,29 @@ func writeVersionFile(filename string) (string, error) {
 	return filename, err
 }
 
-func writeJinxConfig(dir string, filename string, globalRuntime jinxtypes.JinxGlobalRuntime) (string, error) {
-	config := `
----
-ContainerName: {{ .ContainerName }}
-PullImages: false
-`
-	t, err := template.New("jinxConfig").Option("missingkey=error").Parse(config)
+func writeJinxConfig(dir string, filename string, containerName string) (jinxtypes.JinxGlobalRuntime, string, error) {
+	globalRuntime := jinxtypes.JinxGlobalRuntime{ContainerName: containerName, PullImages: false}
+
+	// Convert the struct to YAML
+	data, err := yaml.Marshal(&globalRuntime)
 
 	if err != nil {
-		log.Fatal(err)
-		return "", err
+		fmt.Println(err)
+		return globalRuntime, "", err
 	}
 
 	err = os.MkdirAll(dir, 0755)
 
 	if err != nil {
 		log.Fatal(err)
-		return dir, err
+		return globalRuntime, dir, err
 	}
 
 	jinxConfigPath := dir + "/" + filename
-	file, err := os.Create(jinxConfigPath)
 
-	if err != nil {
-		log.Fatal(err)
-		return jinxConfigPath, err
-	}
+	err = os.WriteFile(jinxConfigPath, data, 0644)
 
-	if err != nil {
-		log.Fatal(err)
-		return jinxConfigPath, err
-	}
-
-	err = t.Execute(file, globalRuntime)
-
-	return jinxConfigPath, err
+	return globalRuntime, jinxConfigPath, err
 }
 
 func writeContainerConfig(dir string, filename string) (string, error) {

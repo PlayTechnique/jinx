@@ -38,7 +38,13 @@ dependencies section of a build.gradle file, so that IDEs can autocomplete funct
 	}
 }
 
-func RegisterPlugins(jinxRunTime jinxtypes.JinxGlobalRuntime) {
+func RegisterPlugins(configFile jinxtypes.ConfigFileLocation) error {
+	jinxRunTime, err := SetupGlobalConfig(configFile)
+
+	if err != nil {
+		return err
+	}
+
 	config := pluginsRuntime{GlobalRuntime: jinxRunTime, TopLevelOutDir: "", RemovePlugins: true, OutputFormat: "plugins.txt"}
 
 	// Go invokes functions at the last possible second, so if we try to do:
@@ -52,4 +58,6 @@ func RegisterPlugins(jinxRunTime jinxtypes.JinxGlobalRuntime) {
 
 	commander.Flags().StringVar(&config.TopLevelOutDir, "outputdir", "", "Directory to copy your plugins into.")
 	commander.Flags().StringVar(&config.OutputFormat, "format", "plugins.txt", "Display format for your plugins output (plugins.txt or build.gradle)")
+
+	return nil
 }
