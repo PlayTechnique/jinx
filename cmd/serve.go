@@ -50,7 +50,13 @@ func (server *ServeRuntime) stopSubCommand() *cobra.Command {
 	}
 }
 
-func RegisterServe(jinxRunTime jinxtypes.JinxGlobalRuntime) {
+func RegisterServe(configFile jinxtypes.ConfigFileLocation) error {
+	jinxRunTime, err := SetupGlobalConfig(configFile)
+
+	if err != nil {
+		return err
+	}
+
 	config := ServeRuntime{GlobalRuntime: jinxRunTime}
 
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
@@ -63,4 +69,6 @@ func RegisterServe(jinxRunTime jinxtypes.JinxGlobalRuntime) {
 	serveCmd.PersistentFlags().StringVarP(&config.HostConfigPath, "hostconfig", "o", "", "Path to config file describing your container host ")
 
 	serveCmd.Flags().StringVarP(&config.HostConfigPath, "jenkinsfile", "e", "", "Path on the host to a Jenkinsfile to use as a seed job")
+
+	return nil
 }

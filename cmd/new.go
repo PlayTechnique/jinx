@@ -1,16 +1,11 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
 	"github.com/spf13/cobra"
 	"jinx/src/jinkiesengine"
-	jinxtypes "jinx/types"
 )
 
 type CreateLayoutRuntime struct {
-	GlobalRuntime jinxtypes.JinxGlobalRuntime
 }
 
 // newCmd represents the new command
@@ -18,24 +13,29 @@ func (createLayout *CreateLayoutRuntime) newCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "new",
 		Short: "Create a new directory and config file layout for a jinkies!",
-		Long: `There are a lot of moving parts to getting Jenkins configured programatically, including init.groovy.d files,
-a Dockerfile, build script stuff, the whole nine yards.
+		Args:  cobra.ExactArgs(1),
 
-Instead of forcing you to do just download my upstream container, I figured a project generator would put more control
-back in your hands.
+		Long: `Run 'jinx new <dir>' to set up the skeleton of a new jinx project in a new starting dir! Use 'jinx new .' 
+to use the current dir.
+
+There are a lot of moving parts to getting Jenkins configured programatically, including init.groovy.d files,
+a Dockerfile, build script stuff, the whole nine yards.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := jinkiesengine.CreateLayout(".", createLayout.GlobalRuntime)
+			containerName, _ := cmd.Flags().GetString("--container-name")
+
+			_, _, err := jinkiesengine.Initialise(containerName, args[0])
 			return err
 		},
 	}
 }
 
-func RegisterNew(globalRuntime jinxtypes.JinxGlobalRuntime) {
-	layout := CreateLayoutRuntime{globalRuntime}
+func RegisterNew() {
+	layout := CreateLayoutRuntime{}
 
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 
+	rootCmd.Flags().String("--container-name", "jinkies", "Set a custom container name for the docker build script.")
 	rootCmd.AddCommand(layout.newCmd())
 
 	// Here you will define your flags and configuration settings.
