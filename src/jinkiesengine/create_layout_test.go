@@ -31,7 +31,7 @@ func TestCreateLayout(t *testing.T) {
 
 }
 
-func VerifyStringEntry(t *testing.T) {
+func TestVerifyStringEntry(t *testing.T) {
 
 	testDir, _ := os.MkdirTemp("", "")
 	os.Chdir(testDir)
@@ -47,6 +47,6 @@ func VerifyStringEntry(t *testing.T) {
 
 	content, err := os.ReadFile(jinxConfig)
 
-	assert.True(t, strings.Contains(testString, string(content)), jinxConfig+" should contain "+testString)
+	assert.True(t, strings.Contains(string(content), testString), jinxConfig+" should contain "+testString)
 
 }
