@@ -1,6 +1,7 @@
 package jenkins
 
 import (
+	"os"
 	"regexp"
 	"testing"
 )
@@ -12,7 +13,8 @@ func TestPlugins(t *testing.T) {
 		PullImages:    false,
 	}
 
-	topLevelDir := "/tmp"
+	topLevelDir, _ := os.MkdirTemp("", "")
+	defer os.RemoveAll(topLevelDir)
 
 	outputFormat := "notvalid.txt"
 
