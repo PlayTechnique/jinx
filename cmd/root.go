@@ -10,7 +10,6 @@ import (
 	jinxtypes "jinx/types"
 	"log"
 	"os"
-	"syscall"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -58,14 +57,14 @@ func SetupGlobalConfig(location jinxtypes.ConfigFileLocation) (jinxtypes.JinxGlo
 	data, err := os.ReadFile(location.ConfigFilePath)
 	if err != nil {
 		log.Fatal(err)
-		syscall.Exit(1)
+		return globalRuntime, err
 	}
 
 	err = yaml.Unmarshal(data, &globalRuntime)
 
 	if err != nil {
 		log.Fatal(err)
-		syscall.Exit(1)
+		return globalRuntime, err
 	}
 
 	return globalRuntime, err

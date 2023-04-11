@@ -6,6 +6,7 @@ import (
 )
 
 type CreateLayoutRuntime struct {
+	ContainerName string
 }
 
 // newCmd represents the new command
@@ -22,9 +23,7 @@ There are a lot of moving parts to getting Jenkins configured programatically, i
 a Dockerfile, build script stuff, the whole nine yards.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			containerName, _ := cmd.Flags().GetString("--container-name")
-
-			_, _, err := jinkiesengine.Initialise(containerName, args[0])
+			_, _, err := jinkiesengine.Initialise(createLayout.ContainerName, args[0])
 			return err
 		},
 	}
@@ -33,16 +32,12 @@ a Dockerfile, build script stuff, the whole nine yards.
 func RegisterNew() {
 	layout := CreateLayoutRuntime{}
 
-	rootCmd.CompletionOptions.DisableDefaultCmd = true
+	//rootCmd.CompletionOptions.DisableDefaultCmd = true
 
-	rootCmd.Flags().String("--container-name", "jinkies", "Set a custom container name for the docker build script.")
-	rootCmd.AddCommand(layout.newCmd())
+	newCommand := layout.newCmd()
+	newCommand.Flags().StringVar(&layout.ContainerName, "container-name", "jinkies", "Set a custom container name for the docker build script.")
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// newCmd.PersistentFlags().String("foo", "", "A help for foo")
+	rootCmd.AddCommand(newCommand)
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:

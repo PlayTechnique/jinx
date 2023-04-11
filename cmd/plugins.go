@@ -54,10 +54,10 @@ func RegisterPlugins(configFile jinxtypes.ConfigFileLocation) error {
 	// when the variable is constructed and the variable contains the pointer, not a function.
 	commander := config.PluginsCmd()
 
-	rootCmd.AddCommand(commander)
-
 	commander.Flags().StringVar(&config.TopLevelOutDir, "outputdir", "", "Directory to copy your plugins into.")
 	commander.Flags().StringVar(&config.OutputFormat, "format", "plugins.txt", "Display format for your plugins output (plugins.txt or build.gradle)")
+
+	rootCmd.AddCommand(commander)
 
 	return nil
 }

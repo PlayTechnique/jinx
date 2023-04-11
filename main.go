@@ -6,6 +6,7 @@ package main
 import (
 	"jinx/cmd"
 	jinxtypes "jinx/types"
+	"os"
 )
 
 func main() {
@@ -13,20 +14,23 @@ func main() {
 		ConfigFilePath: "configFiles/jinx.yml",
 	}
 
-	cmd.RegisterNew()
-
-	var err error
-
-	err = cmd.RegisterPlugins(configFile)
+	_, err := os.Stat(configFile.ConfigFilePath)
 
 	if err != nil {
-		panic(err)
-	}
+		// If the config file doesnt exist, only the new subcommand is available
+		cmd.RegisterNew()
+	} else {
+		err = cmd.RegisterPlugins(configFile)
 
-	err = cmd.RegisterServe(configFile)
+		if err != nil {
+			panic(err)
+		}
 
-	if err != nil {
-		panic(err)
+		err = cmd.RegisterServe(configFile)
+
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	cmd.Execute()

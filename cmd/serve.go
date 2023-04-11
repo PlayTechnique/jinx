@@ -60,7 +60,6 @@ func RegisterServe(configFile jinxtypes.ConfigFileLocation) error {
 	config := ServeRuntime{GlobalRuntime: jinxRunTime}
 
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
-	rootCmd.AddCommand(serveCmd)
 
 	serveCmd.AddCommand(config.startSubCommand())
 	serveCmd.AddCommand(config.stopSubCommand())
@@ -69,6 +68,8 @@ func RegisterServe(configFile jinxtypes.ConfigFileLocation) error {
 	serveCmd.PersistentFlags().StringVarP(&config.HostConfigPath, "hostconfig", "o", "", "Path to config file describing your container host ")
 
 	serveCmd.Flags().StringVarP(&config.HostConfigPath, "jenkinsfile", "e", "", "Path on the host to a Jenkinsfile to use as a seed job")
+
+	rootCmd.AddCommand(serveCmd)
 
 	return nil
 }
