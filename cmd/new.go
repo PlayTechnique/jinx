@@ -12,7 +12,7 @@ type CreateLayoutRuntime struct {
 // newCmd represents the new command
 func (createLayout *CreateLayoutRuntime) newCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "new",
+		Use:   "new <dir>",
 		Short: "Create a new directory and config file layout for a jinkies!",
 		Args:  cobra.ExactArgs(1),
 

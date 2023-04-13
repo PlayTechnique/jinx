@@ -2,8 +2,10 @@ package jinkiesengine
 
 import (
 	_ "embed"
+	"errors"
 	"fmt"
 	"gopkg.in/yaml.v2"
+	"io/fs"
 	jinxtypes "jinx/types"
 	"log"
 	"os"
@@ -14,10 +16,15 @@ var version []byte
 
 // Initialise first verifies if the directory exists. If it does, it returns os.ErrExist.
 func Initialise(containerName string, topLevelDir string) (jinxtypes.JinxGlobalRuntime, []string, error) {
-	if _, err := os.Stat(topLevelDir); os.IsNotExist(err) {
 
-		// Directory exists
-		log.Println(topLevelDir + " already exists. Putting files in...")
+	if _, err := os.Stat(topLevelDir); errors.Is(err, fs.ErrNotExist) {
+		err = os.Mkdir(topLevelDir, 0700)
+		if err != nil {
+			return jinxtypes.JinxGlobalRuntime{}, nil, err
+		}
+	} else {
+		log.Fatal(topLevelDir + " already exists. Cowardly refusing to proceed...")
+		return jinxtypes.JinxGlobalRuntime{}, nil, fmt.Errorf("Directory already exists: %s. Cowardly refusing to proceed.", topLevelDir)
 	}
 
 	globalRuntime, createdFiles, err := createFiles(topLevelDir, containerName)
@@ -38,7 +45,7 @@ func createFiles(topLevelDir string, containerName string) (jinxtypes.JinxGlobal
 
 	createdFiles = append(createdFiles, filename)
 
-	filename, err = writeVersionFile("version.txt")
+	filename, err = writeVersionFile(topLevelDir + "/version.txt")
 
 	if err != nil {
 		log.Fatal(err)

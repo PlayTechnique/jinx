@@ -19,7 +19,11 @@ func TestCreateLayout(t *testing.T) {
 	os.Chdir(testDir)
 	defer os.RemoveAll(testDir)
 
-	_, _, err := Initialise("jeffrey", testDir)
+	jinxDir := "jeffrey"
+
+	_, _, err := Initialise("jinx", jinxDir)
+
+	os.Chdir(jinxDir)
 
 	assert.Nil(t, err)
 
@@ -37,8 +41,11 @@ func TestVerifyStringEntry(t *testing.T) {
 	os.Chdir(testDir)
 	defer os.RemoveAll(testDir)
 
-	testString := "jeffrey"
-	_, _, err := Initialise(testString, testDir)
+	jinxDir := "jeffrey"
+	containerName := "flibble"
+	_, _, err := Initialise(containerName, jinxDir)
+
+	os.Chdir(jinxDir)
 
 	assert.Nil(t, err)
 
@@ -47,6 +54,6 @@ func TestVerifyStringEntry(t *testing.T) {
 
 	content, err := os.ReadFile(jinxConfig)
 
-	assert.True(t, strings.Contains(string(content), testString), jinxConfig+" should contain "+testString)
+	assert.True(t, strings.Contains(string(content), containerName), jinxConfig+" should contain "+containerName)
 
 }
