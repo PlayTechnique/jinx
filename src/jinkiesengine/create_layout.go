@@ -153,8 +153,7 @@ ADD ./jinkies_support_files/ ${JENKINS_HOME}/jinkies_support_files
 }
 
 func writeVersionFile(filename string) (string, error) {
-	version := `
-0.0.0-alpha-prealpha
+	version := `0.0.0-alpha-prealpha
 `
 	err := os.WriteFile(filename, []byte(version), 0700)
 
@@ -191,8 +190,7 @@ func writeJinxConfig(dir string, filename string, containerName string) (jinxtyp
 }
 
 func writeContainerConfig(dir string, filename string) (string, error) {
-	config := `
----
+	config := `---
 autoremove: true
 containerport: "8080/tcp"
 Env:
@@ -220,8 +218,7 @@ image: "jamandbees/jinkies:local"
 }
 
 func writeHostConfig(dir string, filename string) (string, error) {
-	config := `
----
+	config := `---
 AutoRemove: true
 PublishAllPorts: true
 ExposedPorts: "8091/tcp"
