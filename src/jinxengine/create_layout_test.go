@@ -1,4 +1,4 @@
-package jinkiesengine
+package jinxengine
 
 import (
 	"github.com/stretchr/testify/assert"

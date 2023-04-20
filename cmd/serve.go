@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"jinx/src/jinkiesengine"
+	"jinx/src/jinxengine"
 	jinxtypes "jinx/types"
 )
 
@@ -33,7 +33,7 @@ func (server *ServeRuntime) startSubCommand() *cobra.Command {
 		Short: "start jinkies!",
 		Long:  `Starts the jinkies container`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_, err := jinkiesengine.RunRunRun(server.GlobalRuntime.ContainerName, server.GlobalRuntime.PullImages, server.ContainerConfigPath, server.HostConfigPath)
+			_, err := jinxengine.RunRunRun(server.GlobalRuntime.ContainerName, server.GlobalRuntime.PullImages, server.ContainerConfigPath, server.HostConfigPath)
 			return err
 		},
 	}
@@ -45,7 +45,7 @@ func (server *ServeRuntime) stopSubCommand() *cobra.Command {
 		Short: "Stops your jinkies container_info.",
 		Long:  `No configuration is retained after a stop, so this gets you back to a clean slate.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return jinkiesengine.StopGirl(server.GlobalRuntime.ContainerName)
+			return jinxengine.StopGirl(server.GlobalRuntime.ContainerName)
 		},
 	}
 }

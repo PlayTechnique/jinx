@@ -1,4 +1,23 @@
-Jinx: a jinkies coordination tool
+Jinx: a containerised Jenkins coordination tool
+
+# It's too easy to let Jenkins get crufty
+Jenkins is a beast! Most of us run it from the UI, backing up the jenkins data folder and hoping that a restore will
+save us when we need to rebuild. We configure a plugin once, forget how it was done and then are frightened to upgrade
+because something might get misconfigured, so plugins versions get old and out of date.
+
+## The Solution is CI/CD
+There's a better way: use YAML with JCASC where possible, use groovy to programatically configure plugins where it JCASC
+doesn't give you the right tools. All the state for configuring Jenkins is now in version control, allowing for a CI/CD
+approach where new versions of Jenkins trigger a rebuild, and a rebuild guides plugin upgrades.
+
+## There's a lot of heavy lifting to get that working
+Jinx is a cli tool that takes the heavy lifting out of the dev workflow, so Jenkins can live in CI/CD.
+- How do you get plugins to have autocomplete in your IDE, so you're supported in writing groovy to configure them? Jinx
+can inspect a running container, see what plugins you added, and get autocomplete working for intellij idea.
+- Where do you put Jenkins startup code anyway? Jinx provides startup code and preconfigures your Jenkins with
+info about where to find it. Follow the patterns!
+- 
+
 
 # Quick Usage:
 

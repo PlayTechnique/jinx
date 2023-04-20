@@ -1,4 +1,4 @@
-package jinkiesengine
+package jinxengine
 
 import (
 	_ "embed"

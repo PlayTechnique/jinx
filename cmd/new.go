@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"jinx/src/jinkiesengine"
+	"jinx/src/jinxengine"
 )
 
 type CreateLayoutRuntime struct {
@@ -23,7 +23,7 @@ There are a lot of moving parts to getting Jenkins configured programatically, i
 a Dockerfile, build script stuff, the whole nine yards.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_, _, err := jinkiesengine.Initialise(createLayout.ContainerName, args[0])
+			_, _, err := jinxengine.Initialise(createLayout.ContainerName, args[0])
 			return err
 		},
 	}
