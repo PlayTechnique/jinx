@@ -5,6 +5,11 @@ Jenkins is a beast! Most of us run it from the UI, backing up the jenkins data f
 save us when we need to rebuild. We configure a plugin once, forget how it was done and then are frightened to upgrade
 because something might get misconfigured, so plugins versions get old and out of date.
 
+# There's no dev workflor for builds
+You know what irritates me? That every new build's first thirty jobs are failed builds while the developers try to figure
+out the various breaking points in their build. Developers should be able to build their build on their local systems, 
+and submit a working version to a production build tool.
+
 ## The Solution is CI/CD
 There's a better way: use YAML with JCASC where possible, use groovy to programatically configure plugins where it JCASC
 doesn't give you the right tools. All the state for configuring Jenkins is now in version control, allowing for a CI/CD
@@ -16,7 +21,15 @@ Jinx is a cli tool that takes the heavy lifting out of the dev workflow, so Jenk
 can inspect a running container, see what plugins you added, and get autocomplete working for intellij idea.
 - Where do you put Jenkins startup code anyway? Jinx provides startup code and preconfigures your Jenkins with
 info about where to find it. Follow the patterns!
-- 
+
+# What will version 0.1 look like?
+1. You will be able to generate a skeleton of files that are a sane starting point for a programatically configured Jenkins container
+2. You will be able to customise those files.
+3. You will be able to start/stop the container with this cli tool.
+4. You will be able to build the container using this cli tool.
+5. You will be able to generate intellij-compatible code completion for any plugins you install.
+6. You will be able to generate a build on your local system, then submit that build to an instance of this container running in production. 
+
 
 
 # Quick Usage:
