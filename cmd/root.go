@@ -1,6 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -39,7 +36,7 @@ find some that you're not aware exist.
 # Can I use jinx with only your project's containers? I already have jenkins containers and don't want to build your stuff.
 Sure! Some commands simply execute against running containers to figure things out.
 `,
-	Version: "0.0.3",
+	Version: "0.0.0",
 }
 
 func Execute() {

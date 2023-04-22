@@ -1,21 +1,16 @@
 FROM jenkins/jenkins:lts-jdk11
 
-ARG casc_jenkins_config
-ARG jenkins_home
-ARG jenkins_java_opts
-ARG secrets_dir
-ARG jinkies_seed_description
-ARG jinkies_seed_jenkinsfile
+ENV CASC_JENKINS_CONFIG=/var/jenkins_home/jcasc_configs
+ENV JENKINS_HOME=/var/jenkins_home
+# JAVA_OPTS set in the environment that jenkins.jar runs in.
+ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false -Xms1G -Xmx4G"
+ENV JENKINS_SEED_DESCRIPTION="your-default-seed-job"
+ENV JENKINS_SEED_JENKINSFILE="${JENKINS_HOME}/jinx_support_files/Seed_Jenkinsfile"
 
-ENV CASC_JENKINS_CONFIG=${casc_jenkins_config}
-ENV JENKINS_HOME=${jenkins_home}
-ENV JAVA_OPTS=${jenkins_java_opts}
-ENV JINKIES_SEED_DESCRIPTION=${jinkies_seed_description}
-ENV JINKIES_SEED_JENKINSFILE=${jinkies_seed_jenkinsfile}
-
-ENV SECRETS_DIR=${secrets_dir}
-
+# Directory containing credentials files that will be mounted into the image.
 # https://github.com/jenkinsci/configuration-as-code-plugin/blob/master/docs/features/secrets.adoc#docker-secrets
+ENV SECRETS_DIR="./secrets"
+
 USER root
 
 RUN mkdir /run/secrets/ && chown jenkins:jenkins /run/secrets/ && chmod 0700 /run/secrets \
@@ -46,4 +41,4 @@ RUN jenkins-plugin-cli --plugins plain-credentials github-branch-source configur
 
 ADD ${SECRETS_DIR}/ /run/secrets/
 ADD ./init.groovy.d/ ${JENKINS_HOME}/init.groovy.d
-ADD ./jinkies_support_files/ ${JENKINS_HOME}/jinkies_support_files
+ADD ./jinx_support_files/ ${JENKINS_HOME}/jinx_support_files
