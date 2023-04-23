@@ -1,0 +1,10 @@
+---
+autoremove: true
+containerport: "8080/tcp"
+Env:
+#The JINKIES_* environment variables are documented in https://github.com/gwynforthewyn/jinkies/blob/main/Docker/build.env
+#- JINKIES_SEED_DESCRIPTION=
+#- JINKIES_SEED_JENKINSFILE=
+hostip: "0.0.0.0"
+hostport: "8090/tcp"
+image: "jamandbees/jinkies:local"

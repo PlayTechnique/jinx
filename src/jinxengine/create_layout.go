@@ -17,6 +17,12 @@ var version []byte
 //go:embed embed_files/Dockerfile
 var dockerfile []byte
 
+//go:embed embed_files/containerconfig.yml
+var containerconfig []byte
+
+//go:embed embed_files/hostconfig.yml
+var hostconfig []byte
+
 // Initialise first verifies if the directory exists. If it does, it returns os.ErrExist.
 func Initialise(containerName string, topLevelDir string) (jinxtypes.JinxGlobalRuntime, []string, error) {
 
@@ -39,7 +45,7 @@ func createFiles(topLevelDir string, containerName string) (jinxtypes.JinxGlobal
 	var createdFiles []string
 	var globalRuntime jinxtypes.JinxGlobalRuntime
 
-	filename, err := writeDockerFile(topLevelDir+"/Docker", "Dockerfile")
+	filename, err := writeDockerLayout(topLevelDir+"/Docker", "Dockerfile")
 
 	if err != nil {
 		log.Fatal(err)
@@ -87,7 +93,7 @@ func createFiles(topLevelDir string, containerName string) (jinxtypes.JinxGlobal
 	return globalRuntime, createdFiles, err
 }
 
-func writeDockerFile(dir string, filename string) (string, error) {
+func writeDockerLayout(dir string, filename string) (string, error) {
 
 	err := os.MkdirAll(dir, 0700)
 
@@ -96,7 +102,14 @@ func writeDockerFile(dir string, filename string) (string, error) {
 		return dir, err
 	}
 
-	err = os.WriteFile(dir+"/"+filename, []byte(dockerfile), 0700)
+	err = os.Mkdir(dir+"/secrets", 0700)
+
+	if err != nil {
+		log.Fatal(err)
+		return dir + "/secrets", err
+	}
+
+	err = os.WriteFile(dir+"/"+filename, dockerfile, 0700)
 
 	if err != nil {
 		log.Fatal(err)
@@ -143,24 +156,13 @@ func writeJinxConfig(dir string, filename string, containerName string) (jinxtyp
 }
 
 func writeContainerConfig(dir string, filename string) (string, error) {
-	config := `---
-autoremove: true
-containerport: "8080/tcp"
-Env:
-  #The JINKIES_* environment variables are documented in https://github.com/gwynforthewyn/jinkies/blob/main/Docker/build.env
-  #- JINKIES_SEED_DESCRIPTION=
-  #- JINKIES_SEED_JENKINSFILE=
-hostip: "0.0.0.0"
-hostport: "8090/tcp"
-image: "jamandbees/jinkies:local"
-`
 	err := os.MkdirAll(dir, 0755)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = os.WriteFile(dir+"/"+filename, []byte(config), 0700)
+	err = os.WriteFile(dir+"/"+filename, containerconfig, 0700)
 
 	if err != nil {
 		log.Fatal(err)
@@ -171,22 +173,13 @@ image: "jamandbees/jinkies:local"
 }
 
 func writeHostConfig(dir string, filename string) (string, error) {
-	config := `---
-AutoRemove: true
-PublishAllPorts: true
-ExposedPorts: "8091/tcp"
-PortBindings:
-  8080/tcp:
-    HostIp: "0.0.0.0"
-    HostPort: "8091/tcp"
-`
 	err := os.MkdirAll(dir, 0755)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = os.WriteFile(dir+"/"+filename, []byte(config), 0700)
+	err = os.WriteFile(dir+"/"+filename, hostconfig, 0700)
 
 	if err != nil {
 		log.Fatal(err)
