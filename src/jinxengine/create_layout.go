@@ -1,189 +1,135 @@
 package jinxengine
 
 import (
+	"embed"
 	_ "embed"
 	"errors"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/fs"
 	jinxtypes "jinx/types"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
+	"text/template"
 )
 
-//go:embed embed_files/version.txt
-var version []byte
+//go:embed embed_files/*
+var jinxsupportembed embed.FS
 
-//go:embed embed_files/Dockerfile
-var dockerfile []byte
-
-//go:embed embed_files/containerconfig.yml
-var containerconfig []byte
-
-//go:embed embed_files/hostconfig.yml
-var hostconfig []byte
+func init() {
+	log.SetFlags(log.LstdFlags | log.Llongfile)
+}
 
 // Initialise first verifies if the directory exists. If it does, it returns os.ErrExist.
-func Initialise(containerName string, topLevelDir string) (jinxtypes.JinxGlobalRuntime, []string, error) {
+func Initialise(containerName string, topLevelDir string) (jinxtypes.JinxGlobalRuntime, error) {
 
 	if _, err := os.Stat(topLevelDir); errors.Is(err, fs.ErrNotExist) {
 		err = os.Mkdir(topLevelDir, 0700)
 		if err != nil {
-			return jinxtypes.JinxGlobalRuntime{}, nil, err
+			return jinxtypes.JinxGlobalRuntime{}, err
 		}
+
 	} else {
-		log.Fatal(topLevelDir + " already exists. Cowardly refusing to proceed...")
-		return jinxtypes.JinxGlobalRuntime{}, nil, fmt.Errorf("Directory already exists: %s. Cowardly refusing to proceed.", topLevelDir)
+		log.Print(topLevelDir + " already exists. Cowardly refusing to proceed...")
+		return jinxtypes.JinxGlobalRuntime{}, fmt.Errorf("Directory already exists: %s. Cowardly refusing to proceed.", topLevelDir)
 	}
 
-	globalRuntime, createdFiles, err := createFiles(topLevelDir, containerName)
+	topLevelDir, _ = filepath.Abs(topLevelDir)
+	// Return to this directory at the end of creating files.
+	defer os.Chdir(topLevelDir)
 
-	return globalRuntime, createdFiles, err
+	globalRuntime, err := createFiles(topLevelDir, containerName)
+
+	return globalRuntime, err
 }
 
-func createFiles(topLevelDir string, containerName string) (jinxtypes.JinxGlobalRuntime, []string, error) {
-	var createdFiles []string
-	var globalRuntime jinxtypes.JinxGlobalRuntime
+// Parameters:
+// 1. topLevelDir: absolute path to the top level directory that will contain this jinx project.
+// 2. containerName: name of the container to populate in the various config files.
+func createFiles(topLevelDir string, containerName string) (jinxtypes.JinxGlobalRuntime, error) {
+	globalRuntime := jinxtypes.JinxGlobalRuntime{ContainerName: containerName}
 
-	filename, err := writeDockerLayout(topLevelDir+"/Docker", "Dockerfile")
+	_, err := os.Stat(topLevelDir)
 
-	if err != nil {
-		log.Fatal(err)
-		return globalRuntime, createdFiles, err
+	if os.IsNotExist(err) {
+		return globalRuntime, err
 	}
 
-	createdFiles = append(createdFiles, filename)
-
-	filename, err = writeVersionFile(topLevelDir + "/version.txt")
+	err = writeEmbedFs(jinxsupportembed, topLevelDir, globalRuntime)
 
 	if err != nil {
-		log.Fatal(err)
-		return globalRuntime, createdFiles, err
+		return globalRuntime, err
 	}
 
-	createdFiles = append(createdFiles, filename)
-
-	globalRuntime, filename, err = writeJinxConfig(topLevelDir+"/configFiles", "jinx.yml", containerName)
-
-	if err != nil {
-		log.Fatal(err)
-		return globalRuntime, createdFiles, err
-	}
-
-	createdFiles = append(createdFiles, filename)
-
-	filename, err = writeContainerConfig(topLevelDir+"/configFiles", "containerconfig.yml")
-
-	if err != nil {
-		log.Fatal(err)
-		return globalRuntime, createdFiles, err
-	}
-
-	createdFiles = append(createdFiles, filename)
-
-	filename, err = writeHostConfig(topLevelDir+"/configFiles", "hostconfig.yml")
-
-	if err != nil {
-		log.Fatal(err)
-		return globalRuntime, createdFiles, err
-	}
-
-	createdFiles = append(createdFiles, filename)
-
-	return globalRuntime, createdFiles, err
+	return globalRuntime, err
 }
 
-func writeDockerLayout(dir string, filename string) (string, error) {
+func writeEmbedFs(fsys embed.FS, topLevelDir string, globalRuntime jinxtypes.JinxGlobalRuntime) error {
 
-	err := os.MkdirAll(dir, 0700)
+	os.Chdir(topLevelDir)
 
-	if err != nil {
-		log.Fatal(err)
-		return dir, err
+	dirWalker := func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// The embed.fs has embed_files as the top level directory for all paths.
+		// Skip embed_files by itself, and strip it from everything else.
+		if path == "." || path == "embed_files" {
+			return nil
+		}
+
+		destPath := strings.TrimPrefix(path, "embed_files/")
+
+		if d.IsDir() {
+			err = os.MkdirAll(destPath, 0700)
+			if err != nil {
+				return err
+			}
+		} else {
+			switch path {
+			case "embed_files/configFiles/jinx.yml":
+				templ, err := template.ParseFS(fsys, path)
+				if err != nil {
+					return err
+				}
+
+				outputFile, err := os.Create(destPath)
+				if err != nil {
+					return err
+				}
+
+				defer outputFile.Close()
+
+				err = templ.Execute(outputFile, globalRuntime)
+
+				if err != nil {
+					return err
+				}
+
+			default:
+				content, err := fs.ReadFile(fsys, path)
+
+				if err != nil {
+					return err
+				}
+				err = os.WriteFile(destPath, content, 0700)
+
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
 	}
 
-	err = os.Mkdir(dir+"/secrets", 0700)
+	err := fs.WalkDir(fsys, "embed_files", dirWalker)
 
 	if err != nil {
-		log.Fatal(err)
-		return dir + "/secrets", err
+		return err
 	}
 
-	err = os.WriteFile(dir+"/"+filename, dockerfile, 0700)
-
-	if err != nil {
-		log.Fatal(err)
-		// return's on the next line
-	}
-
-	return dir + "/" + filename, err
-}
-
-func writeVersionFile(filename string) (string, error) {
-
-	err := os.WriteFile(filename, []byte(version), 0700)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return filename, err
-}
-
-func writeJinxConfig(dir string, filename string, containerName string) (jinxtypes.JinxGlobalRuntime, string, error) {
-	globalRuntime := jinxtypes.JinxGlobalRuntime{ContainerName: containerName, PullImages: false}
-
-	// Convert the struct to YAML
-	data, err := yaml.Marshal(&globalRuntime)
-
-	if err != nil {
-		fmt.Println(err)
-		return globalRuntime, "", err
-	}
-
-	err = os.MkdirAll(dir, 0755)
-
-	if err != nil {
-		log.Fatal(err)
-		return globalRuntime, dir, err
-	}
-
-	jinxConfigPath := dir + "/" + filename
-
-	err = os.WriteFile(jinxConfigPath, data, 0644)
-
-	return globalRuntime, jinxConfigPath, err
-}
-
-func writeContainerConfig(dir string, filename string) (string, error) {
-	err := os.MkdirAll(dir, 0755)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = os.WriteFile(dir+"/"+filename, containerconfig, 0700)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return dir + "/" + filename, err
-
-}
-
-func writeHostConfig(dir string, filename string) (string, error) {
-	err := os.MkdirAll(dir, 0755)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = os.WriteFile(dir+"/"+filename, hostconfig, 0700)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return dir + "/" + filename, err
+	return nil
 }

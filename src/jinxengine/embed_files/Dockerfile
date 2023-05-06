@@ -4,8 +4,8 @@ ENV CASC_JENKINS_CONFIG=/var/jenkins_home/jcasc_configs
 ENV JENKINS_HOME=/var/jenkins_home
 # JAVA_OPTS set in the environment that jenkins.jar runs in.
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false -Xms1G -Xmx4G"
-ENV JENKINS_SEED_DESCRIPTION="your-default-seed-job"
-ENV JENKINS_SEED_JENKINSFILE="${JENKINS_HOME}/jinx_support_files/Seed_Jenkinsfile"
+ENV JINX_SEED_DESCRIPTION="Default Seed Job provided by Jinx"
+ENV JINX_SEED_JENKINSFILE="${JENKINS_HOME}/jinx_support_files/Seed_Jenkinsfile"
 
 # Directory containing credentials files that will be mounted into the image.
 # https://github.com/jenkinsci/configuration-as-code-plugin/blob/master/docs/features/secrets.adoc#docker-secrets

@@ -3,5 +3,4 @@ jinx
 .swp
 *.env
 go_build_*
-jinx.yml
 **/tmp/*

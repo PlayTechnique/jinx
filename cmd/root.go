@@ -53,14 +53,14 @@ func SetupGlobalConfig(location jinxtypes.ConfigFileLocation) (jinxtypes.JinxGlo
 
 	data, err := os.ReadFile(location.ConfigFilePath)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		return globalRuntime, err
 	}
 
 	err = yaml.Unmarshal(data, &globalRuntime)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		return globalRuntime, err
 	}
 

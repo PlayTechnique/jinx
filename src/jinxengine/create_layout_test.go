@@ -20,18 +20,20 @@ func TestCreateLayout(t *testing.T) {
 	defer os.RemoveAll(testDir)
 
 	jinxDir := "jeffrey"
+	containerName := "jinx"
 
-	_, _, err := Initialise("jinx", jinxDir)
+	_, err := Initialise(containerName, jinxDir)
 
 	os.Chdir(jinxDir)
 
 	assert.Nil(t, err)
 
-	assert.FileExists(t, "Docker/Dockerfile")
+	assert.FileExists(t, "Dockerfile")
 	assert.FileExists(t, "version.txt")
 	assert.FileExists(t, "configFiles/jinx.yml")
 	assert.FileExists(t, "configFiles/containerconfig.yml")
 	assert.FileExists(t, "configFiles/hostconfig.yml")
+	assert.FileExists(t, "jinx_support_files/Seed_Jenkinsfile")
 
 }
 
@@ -43,7 +45,7 @@ func TestVerifyStringEntry(t *testing.T) {
 
 	jinxDir := "jeffrey"
 	containerName := "flibble"
-	_, _, err := Initialise(containerName, jinxDir)
+	_, err := Initialise(containerName, jinxDir)
 
 	os.Chdir(jinxDir)
 

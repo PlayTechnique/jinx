@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"jinx/src/utils"
 	jinxtypes "jinx/types"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -21,6 +22,10 @@ type PluginMetadata struct {
 
 type pluginsData struct {
 	Collection []PluginMetadata
+}
+
+func init() {
+	log.SetFlags(log.LstdFlags | log.Llongfile)
 }
 
 func (self *pluginsData) gatherPlugins(path string, info fs.DirEntry, err error) error {

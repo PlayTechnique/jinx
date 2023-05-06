@@ -6,10 +6,17 @@ package main
 import (
 	"jinx/cmd"
 	jinxtypes "jinx/types"
+	"log"
 	"os"
 )
 
+func init() {
+	log.SetFlags(log.LstdFlags | log.Llongfile)
+}
 func main() {
+	// Set logger to include line numbers.
+	log.SetFlags(log.LstdFlags | log.Llongfile)
+
 	configFile := jinxtypes.ConfigFileLocation{
 		ConfigFilePath: "configFiles/jinx.yml",
 	}
@@ -17,19 +24,19 @@ func main() {
 	_, err := os.Stat(configFile.ConfigFilePath)
 
 	if err != nil {
-		// If the config file doesnt exist, only the new subcommand is available
+		// If the config file doesn't exist, only the new subcommand is available
 		cmd.RegisterNew()
 	} else {
 		err = cmd.RegisterPlugins(configFile)
 
 		if err != nil {
-			panic(err)
+			log.Print(err)
 		}
 
 		err = cmd.RegisterServe(configFile)
 
 		if err != nil {
-			panic(err)
+			log.Print(err)
 		}
 	}
 

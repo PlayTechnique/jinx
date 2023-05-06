@@ -30,6 +30,8 @@ info about where to find it. Follow the patterns!
 5. You will be able to generate intellij-compatible code completion for any plugins you install.
 6. You will be able to generate a build on your local system, then submit that build to an instance of this container running in production. 
 
+# What will version 0.2 have?
+1. Automated support for building credentials files.
 
 
 # Quick Usage:

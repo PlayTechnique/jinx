@@ -6,9 +6,14 @@ import (
 	"github.com/docker/docker/client"
 	"io"
 	"jinx/types"
+	"log"
 	"os"
 	"path"
 )
+
+func init() {
+	log.SetFlags(log.LstdFlags | log.Llongfile)
+}
 
 func CopyFromContainer(globalRuntime jinxtypes.JinxGlobalRuntime, topLevelDir string, pathToCopy string) error {
 	ctx := context.Background()
