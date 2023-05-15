@@ -25,7 +25,7 @@ func init() {
 func Initialise(containerName string, topLevelDir string) (jinxtypes.JinxGlobalRuntime, error) {
 
 	if _, err := os.Stat(topLevelDir); errors.Is(err, fs.ErrNotExist) {
-		err = os.Mkdir(topLevelDir, 0700)
+		err = os.Mkdir(topLevelDir, 0755)
 		if err != nil {
 			return jinxtypes.JinxGlobalRuntime{}, err
 		}
@@ -114,7 +114,7 @@ func writeEmbedFs(fsys embed.FS, topLevelDir string, globalRuntime jinxtypes.Jin
 				if err != nil {
 					return err
 				}
-				err = os.WriteFile(destPath, content, 0700)
+				err = os.WriteFile(destPath, content, 0755)
 
 				if err != nil {
 					return err

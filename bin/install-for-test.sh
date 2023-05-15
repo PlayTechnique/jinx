@@ -9,7 +9,7 @@ tmpdir=$(mktemp -d)
 cd "${tmpdir}"
 
 set +e
-jinx new roflcopter --container-name hippolols
+jinx new jinkies
 set -e
 bash
 

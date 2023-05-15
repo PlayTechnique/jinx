@@ -1,0 +1,24 @@
+# Why each plugin is needed:
+#
+# plain-credentials is recommended in the github pull request builder's configuration page as the preferred method
+# of providing your credentials to Jenkins.
+# - https://plugins.jenkins.io/plain-credentials/
+# - plugins versions https://get.jenkins.io/plugins/plain-credentials/
+# github-branch-source to build out the github support
+# - https://docs.cloudbees.com/docs/cloudbees-ci/latest/cloud-admin-guide/github-branch-source-plugin
+# - plugins versions https://get.jenkins.io/plugins/github-branch-source/
+# configuration-as-code is to allow jenkins elements to be configured with the yaml file format provided by the "Jenkins
+# Configuration As Code" plugin
+# - https://github.com/jenkinsci/configuration-as-code-plugin
+# - plugins versions https://get.jenkins.io/plugins/configuration-as-code/
+# workflow-aggregator is used to support the Jenkins Pipeline build file format
+# - https://plugins.jenkins.io/workflow-aggregator/
+# - plugins versions https://get.jenkins.io/plugins/workflow-aggregator/
+# workflow-cps is the Pipeline: Groovy plugin. It provides the CpsFlowDefinition class which is used to define the seed job from a string
+# - https://plugins.jenkins.io/workflow-cps/
+# - plugins versions https://get.jenkins.io/plugins/workflow-cps/
+plain-credentials
+github-branch-source
+configuration-as-code
+workflow-aggregator
+workflow-cps

@@ -23,16 +23,19 @@ can inspect a running container, see what plugins you added, and get autocomplet
 info about where to find it. Follow the patterns!
 
 # What will version 0.1 look like?
-1. You will be able to generate a skeleton of files that are a sane starting point for a programatically configured Jenkins container
+1. ~~You will be able to generate a skeleton of files that are a sane starting point for a programatically configured Jenkins container~~
 2. You will be able to customise those files.
-3. You will be able to start/stop the container with this cli tool.
-4. You will be able to build the container using this cli tool.
+3. ~~You will be able to start/stop the container with this cli tool.~~
+4. ~~You will be able to build the container using this cli tool.~~ dropping this requirement. Use docker build or buildah.
+The problem is that I wanted to build on macos without linux being involved; I don't think I can get there any decade soon,
+so I'll let docker handle this and revisit the problem later.
 5. You will be able to generate intellij-compatible code completion for any plugins you install.
-6. You will be able to generate a build on your local system, then submit that build to an instance of this container running in production. 
+6. You will be able to generate a build on your local system (dev workflow), then submit that build to an instance of this container running in production. 
+7. You will be able to deploy to k8s
 
 # What will version 0.2 have?
 1. Automated support for building credentials files.
-
+2. Support with docs (comments) and preconfigured examples all pre-installed plugins.
 
 # Quick Usage:
 
